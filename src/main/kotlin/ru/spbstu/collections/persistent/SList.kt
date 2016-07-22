@@ -63,9 +63,12 @@ inline fun<E> SList<E>?.mutateAt(index: Int, f: (SList<E>?) -> SList<E>?): SList
 }
 
 inline fun<E> SList<E>?.drop(index: Int): SList<E>? =
-        (0..index).fold(this){ l, ` ` -> l?.tail }
+        if(index == 0) this
+        else (0..(index-1)).fold(this){ l, ` ` -> l?.tail }
 inline fun<E> SList<E>?.take(index: Int): SList<E>? =
-    splitRevAt(index).first.reverse()
+        splitRevAt(index).first.reverse()
+inline fun<E> SList<E>?.subList(from: Int, to: Int) =
+        drop(from).take(to - from)
 
 inline fun<E> SList<E>?.addAll(that: SList<E>?) = mergeRev(reverse(), that)
 inline fun<E> SList<E>?.add(element: E) = addAll(SList(element))
@@ -144,6 +147,6 @@ class SListList<E>(private val impl: SList<E>? = null) : List<E> {
     }
 
     override fun subList(fromIndex: Int, toIndex: Int) =
-        SListList(impl.drop(fromIndex).take(toIndex - fromIndex))
+        SListList(impl.subList(fromIndex, toIndex))
 }
 

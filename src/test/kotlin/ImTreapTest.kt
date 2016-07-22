@@ -35,7 +35,7 @@ class ImTreapTest {
         val rand = Random()
 
         20.times{
-            val size = rand.nextInt(5) + 1
+            val size = rand.nextInt(5000) + 1
             val t = rand.ints(size.toLong(), 0, size).toArray()
 
             val sl = t.fold(ImTreap<Int>()){ i, e -> i.add(e) }

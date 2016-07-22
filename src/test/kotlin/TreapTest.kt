@@ -64,14 +64,14 @@ class TreapTest {
         val rand = Random()
         testSimple(null, null)
         testSimple(Treap(2,2,2,2,2), Treap(2))
-        100.times{
+        10.times{
             val r = rand.nextInt()
             testSimple(Treap(r), Treap(r))
             testSimple(Treap(r), Treap(-r))
         }
 
-        100.times{
-            val threshold = rand.nextInt(200) + 1 // should not be zero
+        10.times{
+            val threshold = rand.nextInt(5000) + 1 // should not be zero
             val data0 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
             val data1 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
             val t0 = data0.fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
