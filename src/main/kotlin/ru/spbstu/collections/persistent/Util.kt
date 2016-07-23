@@ -31,6 +31,13 @@ fun<E> iteratorHash(i: Iterator<E>): Int {
     return res
 }
 
+fun<A, R> fix(f: ((A) -> R, A) -> R): (A) -> R = { x -> f (fix(f), x) }
+
+inline fun<V> fixValue(crossinline f: (Lazy<V>) -> V): Lazy<V> {
+    var x: Lazy<V>? = null
+    x = lazy { x?.let(f)!! }
+    return x
+}
 
 object Bits {
     inline operator fun Int.get(at: Int): Int = (this shr at) and 1

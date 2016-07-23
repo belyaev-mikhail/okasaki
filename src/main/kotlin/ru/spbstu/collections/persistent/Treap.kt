@@ -2,6 +2,8 @@ package ru.spbstu.collections.persistent
 
 import java.util.*
 
+inline fun treap_id(t: Any?) = t as Treap<Comparable<Any?>, Any?>
+
 data class Treap<E: Comparable<E>, out P>(
         val key: E,
         val payload: P,
@@ -16,7 +18,7 @@ data class Treap<E: Comparable<E>, out P>(
 
     override fun equals(other: Any?): Boolean =
         if(other is Treap<*,*>)
-            iteratorEquals(iterator(), (other as Treap<Comparable<Any?>, *>).iterator())
+            iteratorEquals(iterator(), treap_id(other).iterator())
         else false
 
     override fun hashCode() =

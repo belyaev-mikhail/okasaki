@@ -84,6 +84,8 @@ inline fun<E> SList<E>?.addAll(index: Int, that: SList<E>?) =
 inline fun<E> SList<E>?.add(index: Int, element: E) = addAll(index, SList(element))
 
 operator fun<E> SList<E>?.plus(that: SList<E>?) = addAll(that)
+operator fun<E> E.plus(that: SList<E>?) = SList(this, that)
+operator fun<E> SList<E>?.plus(e: E) = addAll(SList(e))!!
 operator fun<E> SList<E>?.get(index: Int) = splitRevAt(index).second?.head
 
 data class SListIterator<E>(var list: SList<E>?): Iterator<E> {
@@ -138,13 +140,11 @@ class SListList<E>(private val impl: SList<E>? = null) : List<E> {
         return size - ix
     }
 
-    override fun listIterator(): ListIterator<E> {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun listIterator(): ListIterator<E>
+        = SZipper(impl).iterator()
 
-    override fun listIterator(index: Int): ListIterator<E> {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun listIterator(index: Int)
+        = SZipper(impl).iterator(index)
 
     override fun subList(fromIndex: Int, toIndex: Int) =
         SListList(impl.subList(fromIndex, toIndex))

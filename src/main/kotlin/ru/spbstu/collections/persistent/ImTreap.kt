@@ -121,11 +121,8 @@ data class ImTreapList<E>(val inner: ImTreap<E>? = null): List<E> {
         for(e in inner) if(e == element) return true
         return false
     }
-
     override fun containsAll(elements: Collection<E>) = elements.all { contains(it) }
-
     override fun get(index: Int) = inner.get(index)
-
     override fun indexOf(element: E): Int {
         var ix = 0
         for(e in inner) {
@@ -134,11 +131,8 @@ data class ImTreapList<E>(val inner: ImTreap<E>? = null): List<E> {
         }
         return -1;
     }
-
     override fun isEmpty() = size == 0
-
     override fun iterator() = ImTreapIterator(inner)
-
     override fun lastIndexOf(element: E): Int {
         var ix = 0
         var ret = -1
@@ -148,15 +142,12 @@ data class ImTreapList<E>(val inner: ImTreap<E>? = null): List<E> {
         }
         return ret;
     }
-
     override fun listIterator(): ListIterator<E> {
         throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
     override fun listIterator(index: Int): ListIterator<E> {
         throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
     override fun subList(fromIndex: Int, toIndex: Int): List<E> {
         return ImTreapList(inner.subList(fromIndex, toIndex))
     }
