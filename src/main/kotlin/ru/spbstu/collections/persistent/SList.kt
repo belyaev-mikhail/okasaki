@@ -43,6 +43,9 @@ inline fun<E, R> SList<E>?.foldLeft(acc: R, trans: (R, E) -> R): R {
 }
 
 fun <E> SList<E>?.reverse() = foldLeft(SList<E>()){ a, b -> SList(b, a) }
+inline fun <E> SList<E>?.filter(predicate: (E) -> Boolean) =
+        foldLeft(SList<E>()){ a, b -> if(predicate(b)) SList(b, a) else a }.reverse()
+
 val <E> SList<E>?.size: Int
         get() = foldLeft(0){ a, `#` -> a + 1 }
 inline fun <E> SList<E>?.splitRevAt(index: Int): Pair<SList<E>?, SList<E>?> {
@@ -56,11 +59,27 @@ inline fun <E> SList<E>?.splitRevAt(index: Int): Pair<SList<E>?, SList<E>?> {
     }
     return Pair(mutBackList, mutList)
 }
+inline fun <E> SList<E>?.splitRevAt(predicate: (E) -> Boolean): Pair<SList<E>?, SList<E>?> {
+    var mutList = this
+    var mutBackList: SList<E>? = null
+    while(mutList != null && !predicate(mutList.head)) {
+        mutBackList = SList(mutList.head, mutBackList)
+        mutList = mutList.tail
+    }
+    return Pair(mutBackList, mutList)
+}
 inline fun<E> mergeRev(reversed: SList<E>?, rest: SList<E>?) = reversed.foldLeft(rest){ a, b -> SList(b, a) }
 inline fun<E> SList<E>?.mutateAt(index: Int, f: (SList<E>?) -> SList<E>?): SList<E>? {
     val(l,r) = splitRevAt(index)
     return mergeRev(l, f(r))
 }
+inline fun<E> SList<E>?.mutateAt(predicate: (E) -> Boolean, f: (SList<E>?) -> SList<E>?): SList<E>? {
+    val(l,r) = splitRevAt(predicate)
+    return mergeRev(l, f(r))
+}
+inline fun<E> SList<E>?.find(predicate: (E) -> Boolean): E? = splitRevAt(predicate).second?.head
+inline fun<E> SList<E>?.removeAt(predicate: (E) -> Boolean): SList<E>? =
+    mutateAt(predicate){ it?.tail }
 
 inline fun<E> SList<E>?.drop(index: Int): SList<E>? =
         if(index == 0) this

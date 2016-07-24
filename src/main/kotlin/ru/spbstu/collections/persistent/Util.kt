@@ -39,6 +39,11 @@ inline fun<V> fixValue(crossinline f: (Lazy<V>) -> V): Lazy<V> {
     return x
 }
 
+data class WrappedComparator<E>(val cmp: Comparator<E>) {
+    operator fun E.compareTo(that: E): Int = cmp.compare(this, that)
+}
+inline fun<E> withCmp(cmp: Comparator<E>, body: WrappedComparator<E>.() -> Unit) = with(WrappedComparator(cmp), body)
+
 object Bits {
     inline operator fun Int.get(at: Int): Int = (this shr at) and 1
     inline operator fun Int.get(start: Int, end: Int): Int {
