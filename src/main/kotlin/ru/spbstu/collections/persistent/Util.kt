@@ -2,9 +2,6 @@ package ru.spbstu.collections.persistent
 
 import java.util.*
 
-/**
- * Created by belyaev on 7/20/16.
- */
 infix fun Int.times(action: () -> Unit) {
     for(i in 0..this) action()
 }

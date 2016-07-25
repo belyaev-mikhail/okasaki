@@ -1,11 +1,9 @@
+package ru.spbstu.collections.persistent
+
 import org.junit.Test
-import ru.spbstu.collections.persistent.*
 import java.util.*
 import kotlin.test.assertEquals
 
-/**
- * Created by belyaev on 7/20/16.
- */
 class ImTreapTest {
 
     fun testSimple(size: Int, t: ImTreap<Int>?) {
@@ -25,7 +23,7 @@ class ImTreapTest {
         ((size/2 + 3)..(size - 1)).forEach { trt[it] == t[it - 3] }
 
         val sub = trt.subList(size/2, size/2 + 3)
-        assertEquals(sub, ImTreap(1,2,3))
+        assertEquals(sub, ImTreap.Companion(1,2,3))
 
         assertEquals(t, t.subList(0, size))
     }

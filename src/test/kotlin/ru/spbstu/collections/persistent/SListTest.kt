@@ -1,11 +1,9 @@
+package ru.spbstu.collections.persistent
+
 import org.junit.Test
-import ru.spbstu.collections.persistent.*
 import java.util.*
 import kotlin.test.assertEquals
 
-/**
- * Created by belyaev on 7/20/16.
- */
 class SListTest {
 
     fun testSimple(size: Int, t: SList<Int>?) {
@@ -36,7 +34,7 @@ class SListTest {
         ((size/2 + 3)..(size - 1)).forEach { trt[it] == t[it - 3] }
 
         val sub = trt.subList(size/2, size/2 + 3)
-        assertEquals(sub, SList(1,2,3))
+        assertEquals(sub, SList.Companion(1,2,3))
 
         assertEquals(t, t.subList(0, size))
     }

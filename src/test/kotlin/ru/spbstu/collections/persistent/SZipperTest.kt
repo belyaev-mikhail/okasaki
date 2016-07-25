@@ -1,11 +1,8 @@
+package ru.spbstu.collections.persistent
+
 import org.junit.Test
-import ru.spbstu.collections.persistent.*
 import java.util.*
 import kotlin.test.assertEquals
-
-/**
- * Created by Kopcap on 23.07.2016.
- */
 
 class SZipperTest {
     fun testSimple(size: Int, t: SZipper<Int>) {
@@ -41,7 +38,7 @@ class SZipperTest {
         ((size/2 + 3)..(size - 1)).forEach { trt[it] == t[it - 3] }
 
         val sub = trt.subList(size/2, size/2 + 3)
-        assertEquals(sub, SZipper(1, 2, 3))
+        assertEquals(sub, SZipper.Companion(1, 2, 3))
 
         assertEquals(t, t.subList(0, size))
     }
@@ -57,7 +54,7 @@ class SZipperTest {
             val size = rand.nextInt(500) + 1
             val t = rand.ints(size.toLong()).toArray()
 
-            val sl = SZipper(SList.ofCollection(t.toList())).setCursor(rand.nextInt(size))
+            val sl = SZipper(SList.Companion.ofCollection(t.toList())).setCursor(rand.nextInt(size))
 
             testSimple(size, sl)
         }

@@ -1,13 +1,10 @@
+package ru.spbstu.collections.persistent
+
 import org.junit.Test
-import ru.spbstu.collections.persistent.*
 import java.util.*
-import kotlin.system.measureNanoTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-/**
- * Created by belyaev on 7/21/16.
- */
 class TreapTest {
 
     fun testSimple(t0: Treap<Int, Unit>?, t1: Treap<Int, Unit>?) {

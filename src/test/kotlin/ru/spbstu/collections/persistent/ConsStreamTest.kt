@@ -1,10 +1,8 @@
+package ru.spbstu.collections.persistent
+
 import org.junit.Test
-import ru.spbstu.collections.persistent.*
 import kotlin.test.assertEquals
 
-/**
- * Created by Kopcap on 23.07.2016.
- */
 class ConsStreamTest {
     fun naiveFib(n: Long): Long = if(n <= 1) 1 else naiveFib(n - 1) + naiveFib(n - 2)
 

@@ -2,10 +2,6 @@ package ru.spbstu.collections.persistent
 
 import java.util.*
 
-/**
- * Created by belyaev on 7/20/16.
- */
-
 data class SList<out E>(val head: E, val tail: SList<E>? = null) {
 
     companion object {
