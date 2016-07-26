@@ -73,10 +73,7 @@ class MathTest {
             assertEquals(0, 2[0, 0])
 
             ints.forEach { i ->
-                println(Integer.toHexString(i))
-
                 assertEquals(i, i[0, 31])
-                println(i)
                 assertEquals((-(i.compareTo(0))).coerceAtLeast(0), i[31, 31])
                 assertEquals(i.toShort(), i[0, 15].toShort())
                 assertEquals(i.toByte(), i[0, 7].toByte())
@@ -84,10 +81,7 @@ class MathTest {
             }
 
             longs.forEach { i ->
-                println(java.lang.Long.toHexString(i))
-
                 assertEquals(i, i[0, 63])
-                println(i)
                 assertEquals((-(i.compareTo(0))).coerceAtLeast(0).toLong(), i[63, 63])
                 assertEquals(i.toInt(), i[0, 31].toInt())
                 assertEquals(i.toShort(), i[0, 15].toShort())
