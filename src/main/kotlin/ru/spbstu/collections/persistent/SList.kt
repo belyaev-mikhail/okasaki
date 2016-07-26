@@ -64,7 +64,8 @@ inline fun <E> SList<E>?.splitRevAt(predicate: (E) -> Boolean): Pair<SList<E>?, 
     }
     return Pair(mutBackList, mutList)
 }
-inline fun<E> mergeRev(reversed: SList<E>?, rest: SList<E>?) = reversed.foldLeft(rest){ a, b -> SList(b, a) }
+inline fun<E> mergeRev(reversed: SList<E>?, rest: SList<E>?) =
+        reversed.foldLeft(rest){ a, b -> SList(b, a) }
 inline fun<E> SList<E>?.mutateAt(index: Int, f: (SList<E>?) -> SList<E>?): SList<E>? {
     val(l,r) = splitRevAt(index)
     return mergeRev(l, f(r))
