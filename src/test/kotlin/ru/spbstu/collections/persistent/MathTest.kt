@@ -62,6 +62,10 @@ class MathTest {
         }
     }
 
+    data class HexInt(val i: Int){
+        override fun toString() = Integer.toHexString(i)
+    }
+
     @Test
     fun testBits() {
         val rand = Random()
@@ -72,21 +76,21 @@ class MathTest {
             assertEquals(1, 1[0, 0])
             assertEquals(0, 2[0, 0])
 
+            assertEquals(HexInt(0x0DEADBEE[8, 23]), HexInt(0xEADB))
+
             ints.forEach { i ->
                 assertEquals(i, i[0, 31])
-                assertEquals((-(i.compareTo(0))).coerceAtLeast(0), i[31, 31])
+                assertEquals(if(i < 0) 1 else 0, i[31, 31])
                 assertEquals(i.toShort(), i[0, 15].toShort())
                 assertEquals(i.toByte(), i[0, 7].toByte())
-
             }
 
             longs.forEach { i ->
                 assertEquals(i, i[0, 63])
-                assertEquals((-(i.compareTo(0))).coerceAtLeast(0).toLong(), i[63, 63])
+                assertEquals(if(i < 0) 1L else 0L, i[63, 63])
                 assertEquals(i.toInt(), i[0, 31].toInt())
                 assertEquals(i.toShort(), i[0, 15].toShort())
                 assertEquals(i.toByte(), i[0, 7].toByte())
-
             }
         }
 
