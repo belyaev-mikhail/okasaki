@@ -1,6 +1,8 @@
 package ru.spbstu.collections.persistent
 
 import java.util.*
+import kotlin.reflect.jvm.extensionProperties
+import kotlin.reflect.memberExtensionProperties
 
 data class ConsStream<E>(val head: E, val lazyTail: Lazy<ConsStream<E>?>) {
     constructor(head: E, tail: ConsStream<E>?): this(head, lazyOf(tail))

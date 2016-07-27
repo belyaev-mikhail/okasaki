@@ -2,52 +2,39 @@ package ru.spbstu.collections.persistent
 
 import java.util.*
 
-data class BinomialHeapNode<E>(val max: E, val subNodes: SList<BinomialHeapNode<E>>? = null, val cmp: Comparator<E>) {
-    internal operator fun E.compareTo(that: E) = cmp.compare(this, that)
+data class BinomialHeapNode<E>(val max: E, val subNodes: SList<BinomialHeapNode<E>>? = null)
 
-    internal fun maxx(lhv: E?, rhv: E?) =
-        when {
-            lhv == null -> rhv
-            rhv == null -> lhv
-            lhv >= rhv -> lhv
-            else -> rhv
-        }
-    internal fun nextMax(): E? = subNodes.foldLeft<BinomialHeapNode<E>, E?>(null){ acc, heap -> maxx(acc, heap.max) }
+data class BinomialHeap<E> internal constructor(
+        val nodes: SList<BinomialHeapNode<E>?>? = null,
+        internal val cmpOpt: Comparator<E?>,
+        val max: E? = nodes.foldLeft(null as E?) { e, t -> cmpOpt.max(e, t?.max) }
+) {
+    internal operator fun E.compareTo(that: E) = cmpOpt.compare(this, that)
+    internal fun BinomialHeapNode<E>.asHeap() =
+            if (subNodes == null) BinomialHeap(cmpOpt = cmpOpt)
+            else BinomialHeap(subNodes.reverse(), cmpOpt)
 
-    internal fun toHeap(): BinomialHeap<E>? =
-            if(subNodes == null) null
-            else BinomialHeap(
-                    nextMax()!!, // guaranteed not to fail for non-empty subNodes
-                    subNodes.reverse(),
-                    cmp
-            )
-}
-fun<E> BinomialHeapNode(element: E, cmp: Comparator<E>) = BinomialHeapNode(element, null, cmp)
-infix fun<E> BinomialHeapNode<E>.merge(that: BinomialHeapNode<E>) =
-        if(this.max > that.max) this.copy(subNodes = SList(that, subNodes))
-        else that.copy(subNodes = SList(this, subNodes))
+    internal infix fun BinomialHeapNode<E>.merge(that: BinomialHeapNode<E>) =
+            if (this.max > that.max) this.copy(subNodes = SList(that, subNodes))
+            else that.copy(subNodes = SList(this, subNodes))
 
-internal infix fun<E> BinomialHeapNode<E>?.mergeWithCarry(that: BinomialHeapNode<E>?): Pair<BinomialHeapNode<E>?, BinomialHeapNode<E>?> =
-    if(this == null) Pair(that, null)
-    else if(that == null) Pair(this, null)
-    else Pair(null, this merge that)
+    internal infix fun BinomialHeapNode<E>?.mergeWithCarry(that: BinomialHeapNode<E>?):
+            Pair<BinomialHeapNode<E>?, BinomialHeapNode<E>?> =
+            if (this == null) Pair(that, null)
+            else if (that == null) Pair(this, null)
+            else Pair(null, this merge that)
 
-data class BinomialHeap<E>(val max: E, val nodes: SList<BinomialHeapNode<E>?>?, val cmp: Comparator<E>) {
-    internal operator fun E.compareTo(that: E) = cmp.compare(this, that)
-    internal inline fun maxx(v0: E, v1: E) = if(v0 > v1) v0 else v1
 }
 
-internal fun<E> Iterator<E>.nextOrNull(): E? = if(hasNext()) next() else null
-
-infix fun<E> BinomialHeap<E>?.merge(that: BinomialHeap<E>?): BinomialHeap<E>? {
-    this ?: return that
-    that ?: return this
+infix fun <E> BinomialHeap<E>.merge(that: BinomialHeap<E>): BinomialHeap<E> {
+    this.max ?: return that
+    that.max ?: return this
 
     var nodes: SList<BinomialHeapNode<E>?>? = null
     var carry: BinomialHeapNode<E>? = null
     val thisIt = this.nodes.iterator()
     val thatIt = that.nodes.iterator()
-    while(thisIt.hasNext() || thatIt.hasNext()) {
+    while (thisIt.hasNext() || thatIt.hasNext()) {
         val thisVal = thisIt.nextOrNull()
         val thatVal = thisIt.nextOrNull()
         var (sum0, carry0) = thisVal mergeWithCarry thatVal
@@ -55,13 +42,29 @@ infix fun<E> BinomialHeap<E>?.merge(that: BinomialHeap<E>?): BinomialHeap<E>? {
         nodes = SList(sum1, nodes)
         carry = (carry0 mergeWithCarry carry1).first
     }
-    return copy(max = maxx(this.max, that.max), nodes = nodes.reverse())
+    return copy(max = cmpOpt.max(this.max, that.max), nodes = nodes.reverse())
 }
 
-fun<E> BinomialHeap<E>?.popMax(): BinomialHeap<E>? {
-    this ?: return null
+fun <E> BinomialHeap(element: E, cmp: Comparator<E>) =
+        BinomialHeap(SList(BinomialHeapNode(element)), cmp.nullsFirst())
 
-    val maxTree = nodes.foldLeft<BinomialHeapNode<E>?, BinomialHeapNode<E>?>(null){ acc, t ->
+fun <E> BinomialHeap(cmp: Comparator<E>) =
+        BinomialHeap(SList(), cmp.nullsFirst())
+
+fun <E> BinomialHeap(element: E, cmp: (E, E) -> Int) =
+        BinomialHeap(SList(BinomialHeapNode(element)), Comparator(cmp).nullsFirst())
+
+fun <E> BinomialHeap(vararg element: E, cmp: Comparator<E>) =
+        element.map { BinomialHeap(it, cmp) }.reduce { lh, rh -> lh merge rh }
+
+fun <E> BinomialHeap<E>.add(element: E) = this merge BinomialHeap(null, cmpOpt, element)
+
+fun <E> BinomialHeap<E>.addAll(that: BinomialHeap<E>) = this merge that
+
+fun <E> BinomialHeap<E>.popMax(): BinomialHeap<E> {
+    this.max ?: return this
+
+    val maxTree = nodes.foldLeft<BinomialHeapNode<E>?, BinomialHeapNode<E>?>(null) { acc, t ->
         when {
             acc == null -> t
             t == null -> acc
@@ -69,6 +72,9 @@ fun<E> BinomialHeap<E>?.popMax(): BinomialHeap<E>? {
             else -> acc
         }
     }
+    maxTree ?: return BinomialHeap(cmpOpt = cmpOpt)
+    val maxless = BinomialHeap(nodes = nodes.removeAt { it === maxTree }, cmpOpt = cmpOpt)
+    val maxHeap = maxTree.asHeap()
 
-    return (this.copy(nodes = nodes.removeAt { it === maxTree }) merge maxTree?.toHeap())
+    return maxless merge maxHeap
 }

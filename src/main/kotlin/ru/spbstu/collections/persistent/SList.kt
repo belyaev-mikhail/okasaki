@@ -41,6 +41,8 @@ inline fun<E, R> SList<E>?.foldLeft(acc: R, trans: (R, E) -> R): R {
 fun <E> SList<E>?.reverse() = foldLeft(SList<E>()){ a, b -> SList(b, a) }
 inline fun <E> SList<E>?.filter(predicate: (E) -> Boolean) =
         foldLeft(SList<E>()){ a, b -> if(predicate(b)) SList(b, a) else a }.reverse()
+inline fun <E, R> SList<E>?.map(f: (E) -> R): SList<R>? =
+        foldLeft(SList<R>()){ a, b -> SList(f(b), a) }.reverse()
 
 val <E> SList<E>?.size: Int
         get() = foldLeft(0){ a, `#` -> a + 1 }
