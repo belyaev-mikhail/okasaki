@@ -1,5 +1,6 @@
 package ru.spbstu.collections.persistent
 
+import java.lang.reflect.ParameterizedType
 import java.util.*
 import java.util.stream.BaseStream
 import java.util.stream.IntStream
@@ -110,3 +111,5 @@ fun<E> Comparator<E>.nullsFirst(): Comparator<E?> = Comparator.nullsFirst(this) 
 fun<E> Comparator<E>.nullsLast(): Comparator<E?> = Comparator.nullsLast(this) as Comparator<E?>
 
 fun<E> Iterator<E>.nextOrNull(): E? = if(hasNext()) next() else null
+
+inline fun<R> function(body: () -> R): R = body()

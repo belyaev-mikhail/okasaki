@@ -1,5 +1,7 @@
 package ru.spbstu.collections.persistent
 
+import java.util.*
+
 class AmortizedQueue<E> private constructor(val inputs: SList<E>?, val outputs: SList<E>?) {
 
     constructor(): this(null, null)
@@ -28,5 +30,4 @@ class AmortizedQueue<E> private constructor(val inputs: SList<E>?, val outputs: 
 
     companion object
 }
-
 
