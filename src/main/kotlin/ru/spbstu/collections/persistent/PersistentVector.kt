@@ -44,10 +44,12 @@ fun<E> PersistentVector<E>.removeLast() =
 fun<E> PersistentVector.Companion.ofCollection(elements: Collection<E>) =
     elements.fold(PersistentVector<E>()){ v, e -> v.add(e) }
 
+const val NOTHING_TO_INLINE = "NOTHING_TO_INLINE"
+
 data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { null }) {
-    @Suppress("NOTHING_TO_INLINE")
+    @Suppress(NOTHING_TO_INLINE)
     inline fun Int.adjusted() = this and 0x1F
-    @Suppress("NOTHING_TO_INLINE")
+    @Suppress(NOTHING_TO_INLINE)
     inline fun Int.digit(at: Int) = (this ushr (at * 5)) and 0x1F
 
     internal fun getNode(index: Int): PersistentVectorNode<E> = with(Bits) {
