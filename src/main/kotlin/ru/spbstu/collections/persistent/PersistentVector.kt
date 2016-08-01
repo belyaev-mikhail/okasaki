@@ -38,11 +38,17 @@ data class PersistentVector<E>(val size: Int = 0, val root: PersistentVectorNode
 fun<E> PersistentVector<E>.add(element: E) =
     resize(size + 1).set(size, element)
 
+fun<E> PersistentVector<E>.removeLast() =
+    resize(size - 1)
+
 fun<E> PersistentVector.Companion.ofCollection(elements: Collection<E>) =
     elements.fold(PersistentVector<E>()){ v, e -> v.add(e) }
 
 data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { null }) {
+    @Suppress("NOTHING_TO_INLINE")
     inline fun Int.adjusted() = this and 0x1F
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun Int.digit(at: Int) = (this ushr (at * 5)) and 0x1F
 
     internal fun getNode(index: Int): PersistentVectorNode<E> = with(Bits) {
         val realIndex = index.adjusted()
@@ -62,20 +68,24 @@ data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { nul
 
     fun get(index: Int, depthToGo: Int): E? =
             with(Bits) {
-                if (data[index.adjusted()] == null) null
-                else if (depthToGo == 0) getElement(index)
-                else getNode(index ushr (depthToGo * 5)).get(index, depthToGo - 1)
+                val localIx = index.digit(depthToGo)
+                if (data[localIx] == null) null
+                else if (depthToGo == 0) getElement(localIx)
+                else getNode(localIx).get(index, depthToGo - 1)
             }
 
-    fun set(index: Int, element: E, depthToGo: Int): PersistentVectorNode<E> =
+    private fun setOrErase(index: Int, element: E?, depthToGo: Int): PersistentVectorNode<E> =
             with(Bits) {
-                val localIx = index.adjusted()
+                val localIx = index.digit(depthToGo)
                 if (depthToGo == 0) copy(data = data.immSet(localIx, element))
                 else {
-                    val node = getNode(index ushr (depthToGo * 5)).set(index, element, depthToGo - 1)
+                    val node = getNode(localIx).setOrErase(index, element, depthToGo - 1)
                     copy(data = data.immSet(localIx, node))
                 }
             }
+
+    fun set(index: Int, element: E, depthToGo: Int) = setOrErase(index, element, depthToGo)
+    fun erase(index: Int, depthToGo: Int) = setOrErase(index, null, depthToGo)
 }
 
 data class PersistentVectorIterator<E>(var data: PersistentVector<E>): Iterator<E> {
