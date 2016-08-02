@@ -27,6 +27,20 @@ class PersistentVectorTest {
                 assertEquals(t[i], sl[i])
             }
 
+            val sl2 = sl.add(600)
+            assertEquals(600, sl2[size])
+            for(i in (0..size-1)) {
+                assertEquals(t[i], sl2[i])
+            }
+
+            var ix = 0
+            // this is actually testing the iterator implementation, not anything else)
+            for(e in sl) {
+                assertEquals(t[ix], e)
+                ++ix
+            }
+            assertEquals(size, ix)
+
             testSimple(size, sl)
         }
 

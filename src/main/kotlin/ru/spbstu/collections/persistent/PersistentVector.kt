@@ -14,7 +14,7 @@ internal val Int.greaterPowerOf32: Int
 internal val Int.lesserPowerOf32: Int
     get() = if (this == 0) 0 else pow32(log32floor(this))
 
-internal fun<E> Array<E>.immSet(index: Int, element: E) =
+internal fun <E> Array<E>.immSet(index: Int, element: E) =
         this.copyOf().apply { set(index, element) }
 
 data class PersistentVector<E>(val size: Int = 0, val root: PersistentVectorNode<E> = PersistentVectorNode()) {
@@ -32,23 +32,32 @@ data class PersistentVector<E>(val size: Int = 0, val root: PersistentVectorNode
 
     operator inline fun get(index: Int) = root.get(index, depth - 1)
 
-    companion object
+    companion object{}
+
+    override fun equals(other: Any?) =
+            if(other is PersistentVector<*>) iteratorEquals(iterator(), other.iterator())
+            else if(other is Iterable<*>) iteratorEquals(iterator(), other.iterator())
+            else false
+
+    override fun hashCode() = iteratorHash(iterator())
+    override fun toString() = iterator().asSequence().joinToString(prefix = "[", postfix = "]")
 }
 
-fun<E> PersistentVector<E>.add(element: E) =
-    resize(size + 1).set(size, element)
+fun <E> PersistentVector<E>.add(element: E) =
+        resize(size + 1).set(size, element)
 
-fun<E> PersistentVector<E>.removeLast() =
-    resize(size - 1)
+fun <E> PersistentVector<E>.removeLast() =
+        resize(size - 1)
 
-fun<E> PersistentVector.Companion.ofCollection(elements: Collection<E>) =
-    elements.fold(PersistentVector<E>()){ v, e -> v.add(e) }
+fun <E> PersistentVector.Companion.ofCollection(elements: Collection<E>) =
+        elements.fold(PersistentVector<E>()) { v, e -> v.add(e) }
 
 const val NOTHING_TO_INLINE = "NOTHING_TO_INLINE"
 
 data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { null }) {
     @Suppress(NOTHING_TO_INLINE)
     inline fun Int.adjusted() = this and 0x1F
+
     @Suppress(NOTHING_TO_INLINE)
     inline fun Int.digit(at: Int) = (this ushr (at * 5)) and 0x1F
 
@@ -90,14 +99,38 @@ data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { nul
     fun erase(index: Int, depthToGo: Int) = setOrErase(index, null, depthToGo)
 }
 
-data class PersistentVectorIterator<E>(var data: PersistentVector<E>): Iterator<E> {
+data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator<E?> {
     data class IterationState<E>(val depth: Int, var index: Int, val curNode: PersistentVectorNode<E>) {
         val next: IterationState<E>
             get() = IterationState(depth - 1, 0, curNode.getNode(index))
     }
-    var currentState: IterationState<E> = IterationState(data.depth, 0, data.root)
-    val backStack: Stack<IterationState<E>> = Stack()
 
-    override fun hasNext() = TODO()
-    override fun next() = TODO()
+    var currentState: IterationState<E> = IterationState(data.depth - 1, 0, data.root)
+    val backStack: Stack<IterationState<E>> = Stack()
+    var totalIx: Int = 0
+
+    override fun hasNext() = totalIx < data.size
+    override fun next(): E? {
+        ++totalIx
+        if (totalIx > data.size) {
+            throw NoSuchElementException()
+        }
+
+        while (currentState.depth > 0) {
+            backStack.push(currentState)
+            currentState = currentState.next
+        }
+
+        val ret = currentState.curNode.getElement(currentState.index)
+        ++currentState.index
+
+        while (currentState.index == 32) {
+            currentState = backStack.pop()
+            ++currentState.index
+        }
+
+        return ret
+    }
 }
+
+operator fun <E> PersistentVector<E>.iterator() = PersistentVectorIterator(this)
