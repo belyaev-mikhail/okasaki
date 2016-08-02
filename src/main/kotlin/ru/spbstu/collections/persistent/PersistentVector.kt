@@ -38,6 +38,9 @@ data class PersistentVector<E> internal constructor(val size: Int = 0, val root:
             if (index > size) throw IndexOutOfBoundsException()
             else copy(root = root.set(index, value, depth - 1))
 
+    fun mutate(index: Int, f: (E?) -> E?) =
+            copy(root = root.mutate(index, f, depth - 1))
+
     operator fun get(index: Int) = root.get(index, depth - 1)
 
     companion object{}
@@ -100,6 +103,26 @@ internal data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(
                 else {
                     val node = getNode(localIx).setOrErase(index, element, depthToGo - 1)
                     copy(data = data.immSet(localIx, node))
+                }
+            }
+
+    fun mutate(index: Int, mut: (E?) -> E?, depthToGo: Int): PersistentVectorNode<E> =
+            with(Bits) {
+                val localIx = index.digit(depthToGo)
+                if (depthToGo == 0) {
+                    val oldVal = getElement(localIx)
+                    val newVal = mut(oldVal)
+                    if(oldVal == newVal) this@PersistentVectorNode
+                    else {
+                        val mutated = data.immSet(localIx, mut(@Suppress(Warnings.UNCHECKED_CAST)(data[localIx] as? E?)))
+                        copy(data = mutated)
+                    }
+                }
+                else {
+                    val node = getNode(localIx)
+                    val newNode = node.mutate(index, mut, depthToGo - 1)
+                    if(node === newNode) this@PersistentVectorNode
+                    else copy(data = data.immSet(localIx, newNode))
                 }
             }
 
