@@ -1,27 +1,35 @@
 package ru.spbstu.collections.persistent
 
+import kotlinx.Warnings
 import ru.spbstu.collections.persistent.Bits.get
 import ru.spbstu.collections.persistent.log2ceil
 import java.util.*
 
 // clojure-style persistent vector is just an implicit segment tree with branching factor of 32
-internal inline fun log32ceil(v: Int) = (log2ceil(v) - 1) / 5 + 1
+internal const val BF = 32
+internal const val BINARY_DIGITS = 5 // == log2(BF); number of binary digits needed for one BF digit
+internal const val DIGITS_MASK = (BF - 1) // == '1' bit repeated BINARY_DIGITS times; 0x1F for BF = 32
 
-internal inline fun log32floor(v: Int) = log2floor(v) / 5
-internal inline fun pow32(v: Int) = 1 shl (v * 5)
-internal val Int.greaterPowerOf32: Int
-    get() = pow32(log32ceil(this))
-internal val Int.lesserPowerOf32: Int
-    get() = if (this == 0) 0 else pow32(log32floor(this))
+@Suppress(Warnings.NOTHING_TO_INLINE)
+internal inline fun logBFceil(v: Int) = (log2ceil(v) - 1) / BINARY_DIGITS + 1
+@Suppress(Warnings.NOTHING_TO_INLINE)
+internal inline fun logBFfloor(v: Int) = log2floor(v) / BINARY_DIGITS
+@Suppress(Warnings.NOTHING_TO_INLINE)
+internal inline fun powBF(v: Int) = 1 shl (v * BINARY_DIGITS)
+
+internal val Int.greaterPowerOfBF: Int
+    get() = powBF(logBFceil(this))
+internal val Int.lesserPowerOfBF: Int
+    get() = if (this == 0) 0 else powBF(logBFfloor(this))
 
 internal fun <E> Array<E>.immSet(index: Int, element: E) =
         this.copyOf().apply { set(index, element) }
 
-data class PersistentVector<E>(val size: Int = 0, val root: PersistentVectorNode<E> = PersistentVectorNode()) {
+data class PersistentVector<E> internal constructor(val size: Int = 0, val root: PersistentVectorNode<E> = PersistentVectorNode()) {
     val capacity: Int
-        get() = size.greaterPowerOf32
+        get() = size.greaterPowerOfBF
     val depth: Int
-        get() = log32ceil(capacity)
+        get() = logBFceil(capacity)
 
     fun resize(newSize: Int) =
             copy(size = newSize, root = root.getLeftNodeOfSize(capacity, newSize))
@@ -30,7 +38,7 @@ data class PersistentVector<E>(val size: Int = 0, val root: PersistentVectorNode
             if (index > size) throw IndexOutOfBoundsException()
             else copy(root = root.set(index, value, depth - 1))
 
-    operator inline fun get(index: Int) = root.get(index, depth - 1)
+    operator fun get(index: Int) = root.get(index, depth - 1)
 
     companion object{}
 
@@ -52,29 +60,29 @@ fun <E> PersistentVector<E>.removeLast() =
 fun <E> PersistentVector.Companion.ofCollection(elements: Collection<E>) =
         elements.fold(PersistentVector<E>()) { v, e -> v.add(e) }
 
-const val NOTHING_TO_INLINE = "NOTHING_TO_INLINE"
+internal data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(BF) { null }) {
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    internal inline fun Int.adjusted() = this and DIGITS_MASK
 
-data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { null }) {
-    @Suppress(NOTHING_TO_INLINE)
-    inline fun Int.adjusted() = this and 0x1F
-
-    @Suppress(NOTHING_TO_INLINE)
-    inline fun Int.digit(at: Int) = (this ushr (at * 5)) and 0x1F
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    internal inline fun Int.digit(at: Int) = (this ushr (at * BINARY_DIGITS)) and DIGITS_MASK
 
     internal fun getNode(index: Int): PersistentVectorNode<E> = with(Bits) {
         val realIndex = index.adjusted()
-        val ret = data[realIndex]
-        if (ret == null) return PersistentVectorNode()
+        val ret = data[realIndex] ?: return PersistentVectorNode()
+        @Suppress(Warnings.UNCHECKED_CAST)
         return ret as PersistentVectorNode<E>
     }
 
-    internal fun getElement(index: Int): E? = with(Bits) { data[index.adjusted()] as? E? }
+
+    internal fun getElement(index: Int): E? =
+            with(Bits) { @Suppress(Warnings.UNCHECKED_CAST)(data[index.adjusted()] as? E?) }
 
     internal fun getLeftNodeOfSize(yourSize: Int, size: Int): PersistentVectorNode<E> = with(this) {
-        val adjustedSize = size.greaterPowerOf32
+        val adjustedSize = size.greaterPowerOfBF
         if (yourSize == adjustedSize) this
-        else if (yourSize > adjustedSize) getNode(0).getLeftNodeOfSize(yourSize / 32, size)
-        else PersistentVectorNode<E>(data = Array(32) { if (it == 0) this else null })
+        else if (yourSize > adjustedSize) getNode(0).getLeftNodeOfSize(yourSize / BF, size)
+        else PersistentVectorNode<E>(data = Array(BF) { if (it == 0) this else null })
     }
 
     fun get(index: Int, depthToGo: Int): E? =
@@ -97,17 +105,35 @@ data class PersistentVectorNode<E>(val data: Array<Any?> = Array<Any?>(32) { nul
 
     fun set(index: Int, element: E, depthToGo: Int) = setOrErase(index, element, depthToGo)
     fun erase(index: Int, depthToGo: Int) = setOrErase(index, null, depthToGo)
+
+    // these guys don't really work
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = System.identityHashCode(this)
 }
 
 data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator<E?> {
-    data class IterationState<E>(val depth: Int, var index: Int, val curNode: PersistentVectorNode<E>) {
+    internal data class IterationState<E>(val depth: Int, var index: Int, val curNode: PersistentVectorNode<E>) {
         val next: IterationState<E>
             get() = IterationState(depth - 1, 0, curNode.getNode(index))
     }
 
-    var currentState: IterationState<E> = IterationState(data.depth - 1, 0, data.root)
-    val backStack: Stack<IterationState<E>> = Stack()
-    var totalIx: Int = 0
+    private var currentState: IterationState<E> = IterationState(data.depth - 1, 0, data.root)
+    private val backStack: Stack<IterationState<E>> = Stack()
+    private var totalIx: Int = 0
+
+    private fun ensureLeaf() {
+        while (currentState.depth > 0) {
+            backStack.push(currentState)
+            currentState = currentState.next
+        }
+    }
+
+    private fun ensureNonEmptyBranch() {
+        while (currentState.index == BF) {
+            currentState = backStack.pop()
+            ++currentState.index
+        }
+    }
 
     override fun hasNext() = totalIx < data.size
     override fun next(): E? {
@@ -115,19 +141,12 @@ data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator
         if (totalIx > data.size) {
             throw NoSuchElementException()
         }
-
-        while (currentState.depth > 0) {
-            backStack.push(currentState)
-            currentState = currentState.next
-        }
+        ensureLeaf()
 
         val ret = currentState.curNode.getElement(currentState.index)
         ++currentState.index
 
-        while (currentState.index == 32) {
-            currentState = backStack.pop()
-            ++currentState.index
-        }
+        ensureNonEmptyBranch()
 
         return ret
     }

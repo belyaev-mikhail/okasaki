@@ -41,8 +41,8 @@ class MathTest {
 
         ints.forEach { i -> // random int > 0
 
-            val pow32ceil = i.greaterPowerOf32
-            val pow32floor = i.lesserPowerOf32
+            val pow32ceil = i.greaterPowerOfBF
+            val pow32floor = i.lesserPowerOfBF
 
             assert(pow32ceil >= i)
             assert(pow32floor <= i)
@@ -55,8 +55,8 @@ class MathTest {
             assert(pow32ceil % 2 == 0)
             assert(pow32floor % 2 == 0 || pow32floor == 1) // don't forget 1 is a legit power of anything
 
-            assert(log32ceil(pow32ceil) == log32ceil(i))
-            assert(log32floor(pow32floor) == log32floor(i))
+            assert(logBFceil(pow32ceil) == logBFceil(i))
+            assert(logBFfloor(pow32floor) == logBFfloor(i))
             if (pow32floor != 0) assert(pow32ceil / pow32floor in listOf(1, 32))
 
         }

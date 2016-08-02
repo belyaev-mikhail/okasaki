@@ -11,10 +11,13 @@ class PersistentVectorTest {
         assertEquals(size, t.size)
 
         assertEquals(size + 2, t.add(50).add(13).size)
+        assertEquals(size + 1, t.add(220).add(14).removeLast().size)
     }
 
     @Test
     fun testRandom() {
+        testSimple(0, PersistentVector.ofCollection(emptyList<Int>()))
+        testSimple(1, PersistentVector.ofCollection(listOf(345)))
         testSimple(3, PersistentVector.ofCollection(listOf(1,2,3)))
 
         20.times{
