@@ -115,6 +115,8 @@ data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator
     internal data class IterationState<E>(val depth: Int, var index: Int, val curNode: PersistentVectorNode<E>) {
         val next: IterationState<E>
             get() = IterationState(depth - 1, 0, curNode.getNode(index))
+        val currentElement: E?
+            get() = curNode.getElement(index)
     }
 
     private var currentState: IterationState<E> = IterationState(data.depth - 1, 0, data.root)
@@ -143,7 +145,7 @@ data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator
         }
         ensureLeaf()
 
-        val ret = currentState.curNode.getElement(currentState.index)
+        val ret = currentState.currentElement
         ++currentState.index
 
         ensureNonEmptyBranch()
