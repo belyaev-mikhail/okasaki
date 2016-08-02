@@ -1,6 +1,8 @@
 package ru.spbstu.collections.persistent
 
+import kotlinx.Warnings
 import java.util.*
+import java.util.concurrent.*
 
 inline fun treap_id(t: Any?) = t as Treap<Comparable<Any?>, Any?>
 
@@ -138,6 +140,79 @@ fun<E: Comparable<E>, P> difference(left: Treap<E, P>?, right: Treap<E, P>?, rig
 }
 
 infix fun<E: Comparable<E>, P> Treap<E, P>?.difference(that: Treap<E, P>?) = difference(this, that, true)
+
+@Suppress(Warnings.NOTHING_TO_INLINE)
+inline operator fun<E> ExecutorService.invoke(noinline c: () -> E): Future<E> = submit(c)
+@Suppress(Warnings.NOTHING_TO_INLINE)
+inline operator fun<E> ForkJoinPool.invoke(noinline c: () -> E): ForkJoinTask<E> = submit(c)
+
+class UnionTask<E: Comparable<E>, P>(val `this`: Treap<E, P>?, val that: Treap<E, P>?,
+                                     val pool: ExecutorService = Executors.newCachedThreadPool(),
+                                     val factor: Int = Runtime.getRuntime().availableProcessors()/2): Callable<Treap<E, P>?> {
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    inline fun recurse(lhv: Treap<E, P>?, rhv: Treap<E, P>?) = pool.submit(UnionTask(lhv, rhv, pool, factor/2))
+
+    override fun call(): Treap<E, P>? {
+        if(factor == 0) return `this` union that
+
+        `this` ?: return that
+        that ?: return `this`
+
+        val (T1, T2) =
+                if(`this`.priority < that.priority) Pair(that, `this`)
+                else Pair(`this`, that)
+
+        val (L, R) = T2.split(T1.key)
+        val leftF = recurse(T1.left, L)
+        val rightF = recurse(T1.right, R)
+
+        return T1.copy(left = leftF.get(), right = rightF.get())
+    }
+}
+
+fun<E: Comparable<E>, P> Treap<E, P>?.punion(that: Treap<E, P>?,
+                                             pool: ExecutorService = Executors.newCachedThreadPool()) : Treap<E, P>? {
+
+    return pool.submit(UnionTask(this, that, pool)).get()
+}
+
+fun<E: Comparable<E>, P> Treap<E, P>?.pintersect(that: Treap<E, P>?,
+                                                 pool: ForkJoinPool = ForkJoinPool.commonPool()) : Treap<E, P>? {
+    this ?: return null
+    that ?: return null
+
+    if(this.priority < that.priority) return that intersect this
+
+    val (L, R, Dup) = that.split(this.key)
+    val Ltask = pool.invoke { this.left.pintersect(L, pool) }
+    val Rtask = pool.invoke { this.right.pintersect(R, pool) }
+
+    if(!Dup) {
+        return Ltask.join() merge Rtask.join()
+    } else {
+        return this.copy(left = Ltask.join(), right = Rtask.join())
+    }
+}
+
+fun<E: Comparable<E>, P> pdifference(left: Treap<E, P>?, right: Treap<E, P>?, rightFromLeft: Boolean,
+                                     pool: ForkJoinPool = ForkJoinPool.commonPool()) : Treap<E, P>? {
+    if(left == null || right == null) {
+        return if(rightFromLeft) left else right
+    }
+
+    if(left.priority < right.priority) return pdifference(right, left, !rightFromLeft, pool)
+
+    val(L, R, Dup) = right.split(left.key)
+
+    val Ltask = pool.invoke { pdifference(left.left, L, rightFromLeft, pool)  }
+    val Rtask = pool.invoke { pdifference(left.right, R, rightFromLeft, pool) }
+
+    if(!Dup && rightFromLeft) {
+        return left.copy(left = Ltask.join(), right = Rtask.join())
+    } else {
+        return Ltask.join() merge Rtask.join()
+    }
+}
 
 operator fun<E: Comparable<E>, P> Treap<E, P>?.plus(that: Treap<E, P>?) = this union that
 operator fun<E: Comparable<E>, P> Treap<E, P>?.minus(that: Treap<E, P>?) = this difference that

@@ -2,6 +2,9 @@ package ru.spbstu.collections.persistent
 
 import org.junit.Test
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
+import kotlin.system.measureTimeMillis
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -84,6 +87,20 @@ class TreapTest {
             testSimple(t0, Treap(rand.nextInt()))
             testSimple(t0, t1 - t0)
             testSimple(t0, t1 + t0)
+        }
+
+        10.times {
+            val pool = Executors.newFixedThreadPool(8)
+            val threshold = rand.nextInt(5000000) + 1 // should not be zero
+            val data0 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
+            val data1 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
+            val t0 = data0.fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
+            val t1 = data1.fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
+
+            measureTimeMillis { t0.union(t1) }.let { println(it) }
+            measureTimeMillis { t0.punion(t1, pool) }.let { println(it) }
+
+            //val t3 = t0.pintersect(t1)
         }
     }
 
