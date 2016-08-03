@@ -23,6 +23,9 @@ object HamtScope {
 
     internal fun <E> Array<E>.immSet(index: Int, element: E) =
             this.copyOf().apply { set(index, element) }
+
+    internal val Int.popcount: Int
+            get() = Integer.bitCount(this)
 }
 
 data class Hamt<E> internal constructor(val root: HamtNode<E>, val size: Int) {
