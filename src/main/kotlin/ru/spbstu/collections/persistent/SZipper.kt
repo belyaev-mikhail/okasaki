@@ -111,7 +111,7 @@ fun<E> SZipper<E>.drop(where: Int): SZipper<E> {
     return copy(right = r, left = null, cursor = 0, size = size - where)
 }
 
-inline fun<E> SZipper<E>.subList(from: Int, to: Int) =
+fun<E> SZipper<E>.subList(from: Int, to: Int) =
         drop(from).take(to - from)
 
 operator fun<E> SZipper<E>.plus(that: SZipper<E>) = addAll(that)

@@ -1,7 +1,6 @@
 package ru.spbstu.collections.persistent
 
 import kotlinx.Warnings
-import java.util.*
 
 data class PVectorHashtable<E>(private val holder: PersistentVector<SList<E>?>) {
 

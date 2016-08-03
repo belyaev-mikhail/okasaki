@@ -1,5 +1,9 @@
 package ru.spbstu.collections.persistent.impl
 
+import ru.spbstu.collections.persistent.andReturn
+import ru.spbstu.collections.persistent.butAlso
+import java.util.*
+
 abstract class AbstractList<E>: List<E>, AbstractCollection<E>() {
     override fun contains(element: E): Boolean {
         for(e in this) if(e == element) return true
@@ -34,9 +38,9 @@ abstract class AbstractList<E>: List<E>, AbstractCollection<E>() {
     data class DefaultListIterator<E>(val data: List<E>, var index: Int = 0): ListIterator<E> {
         override fun hasNext() = index < data.size
         override fun hasPrevious() = index > 0
-        override fun next() = data[index].apply { ++index }
+        override fun next() = data[index] butAlso { ++index }
         override fun nextIndex() = index
-        override fun previous() = run { --index; data[index] }
+        override fun previous() = { --index } andReturn data[index]
         override fun previousIndex() = index - 1
     }
 
@@ -66,7 +70,7 @@ abstract class AbstractList<E>: List<E>, AbstractCollection<E>() {
     override fun hashCode(): Int {
         var hashCode = 1
         for (e in this)
-            hashCode = 31 * hashCode + if (e == null) 0 else e.hashCode()
+            hashCode = 31 * hashCode + Objects.hashCode(e)
         return hashCode
     }
 }

@@ -37,28 +37,30 @@ class MathTest {
     @Test
     fun testPowersOf32() {
         val rand = Random()
-        val ints = rand.ints(2000, 0, Int.MAX_VALUE / 32).asSequence() + rand.nextInt(32) + 0 + 1
+        with(PersistentVectorScope) {
+            val ints = rand.ints(2000, 0, Int.MAX_VALUE / BF).asSequence() + rand.nextInt(BF) + 0 + 1
 
-        ints.forEach { i -> // random int > 0
+            ints.forEach { i -> // random int > 0
 
-            val pow32ceil = i.greaterPowerOfBF
-            val pow32floor = i.lesserPowerOfBF
+                val pow32ceil = i.greaterPowerOfBF
+                val pow32floor = i.lesserPowerOfBF
 
-            assert(pow32ceil >= i)
-            assert(pow32floor <= i)
+                assert(pow32ceil >= i)
+                assert(pow32floor <= i)
 
-            assert(pow32ceil.greaterPowerOf2 == pow32ceil)
-            assert(pow32ceil.lesserPowerOf2 == pow32ceil)
-            assert(pow32floor == 0 || pow32floor.greaterPowerOf2 == pow32floor)
-            assert(pow32floor == 0 || pow32floor.lesserPowerOf2 == pow32floor)
+                assert(pow32ceil.greaterPowerOf2 == pow32ceil)
+                assert(pow32ceil.lesserPowerOf2 == pow32ceil)
+                assert(pow32floor == 0 || pow32floor.greaterPowerOf2 == pow32floor)
+                assert(pow32floor == 0 || pow32floor.lesserPowerOf2 == pow32floor)
 
-            assert(pow32ceil % 2 == 0)
-            assert(pow32floor % 2 == 0 || pow32floor == 1) // don't forget 1 is a legit power of anything
+                assert(pow32ceil % 2 == 0)
+                assert(pow32floor % 2 == 0 || pow32floor == 1) // don't forget 1 is a legit power of anything
 
-            assert(logBFceil(pow32ceil) == logBFceil(i))
-            assert(logBFfloor(pow32floor) == logBFfloor(i))
-            if (pow32floor != 0) assert(pow32ceil / pow32floor in listOf(1, 32))
+                assert(logBFceil(pow32ceil) == logBFceil(i))
+                assert(logBFfloor(pow32floor) == logBFfloor(i))
+                if (pow32floor != 0) assert(pow32ceil / pow32floor in listOf(1, BF))
 
+            }
         }
     }
 

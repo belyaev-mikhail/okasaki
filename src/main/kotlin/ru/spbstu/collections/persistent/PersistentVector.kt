@@ -6,25 +6,34 @@ import ru.spbstu.collections.persistent.impl.Wrapper
 import ru.spbstu.collections.persistent.log2ceil
 import java.util.*
 
-// clojure-style persistent vector is just an implicit segment tree with branching factor of 32
-internal const val BF = 32
-internal const val BINARY_DIGITS = 5 // == log2(BF); number of binary digits needed for one BF digit
-internal const val DIGITS_MASK = (BF - 1) // == '1' bit repeated BINARY_DIGITS times; 0x1F for BF = 32
+import ru.spbstu.collections.persistent.PersistentVectorScope.logBFceil
+import ru.spbstu.collections.persistent.PersistentVectorScope.greaterPowerOfBF
+import ru.spbstu.collections.persistent.PersistentVectorScope.immSet
+import ru.spbstu.collections.persistent.PersistentVectorScope.BF
+import ru.spbstu.collections.persistent.PersistentVectorScope.BINARY_DIGITS
+import ru.spbstu.collections.persistent.PersistentVectorScope.DIGITS_MASK
 
-@Suppress(Warnings.NOTHING_TO_INLINE)
-internal inline fun logBFceil(v: Int) = (log2ceil(v) - 1) / BINARY_DIGITS + 1
-@Suppress(Warnings.NOTHING_TO_INLINE)
-internal inline fun logBFfloor(v: Int) = log2floor(v) / BINARY_DIGITS
-@Suppress(Warnings.NOTHING_TO_INLINE)
-internal inline fun powBF(v: Int) = 1 shl (v * BINARY_DIGITS)
+object PersistentVectorScope {
+    // clojure-style persistent vector is just an implicit segment tree with branching factor of 32
+    internal const val BF = 32
+    internal const val BINARY_DIGITS = 5 // == log2(BF); number of binary digits needed for one BF digit
+    internal const val DIGITS_MASK = (BF - 1) // == '1' bit repeated BINARY_DIGITS times; 0x1F for BF = 32
 
-internal val Int.greaterPowerOfBF: Int
-    get() = powBF(logBFceil(this))
-internal val Int.lesserPowerOfBF: Int
-    get() = if (this == 0) 0 else powBF(logBFfloor(this))
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    internal inline fun logBFceil(v: Int) = (log2ceil(v) - 1) / BINARY_DIGITS + 1
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    internal inline fun logBFfloor(v: Int) = log2floor(v) / BINARY_DIGITS
+    @Suppress(Warnings.NOTHING_TO_INLINE)
+    internal inline fun powBF(v: Int) = 1 shl (v * BINARY_DIGITS)
 
-internal fun <E> Array<E>.immSet(index: Int, element: E) =
-        this.copyOf().apply { set(index, element) }
+    internal val Int.greaterPowerOfBF: Int
+        get() = powBF(logBFceil(this))
+    internal val Int.lesserPowerOfBF: Int
+        get() = if (this == 0) 0 else powBF(logBFfloor(this))
+
+    internal fun <E> Array<E>.immSet(index: Int, element: E) =
+            this.copyOf().apply { set(index, element) }
+}
 
 data class PersistentVector<E> internal constructor(val size: Int = 0, val root: PersistentVectorNode<E> = PersistentVectorNode()) {
     val capacity: Int

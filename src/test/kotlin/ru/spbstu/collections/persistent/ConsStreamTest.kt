@@ -1,5 +1,6 @@
 package ru.spbstu.collections.persistent
 
+import kotlinx.Warnings
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -27,6 +28,7 @@ class ConsStreamTest {
 
         (0..20).forEach { assertEquals(naiveFibs[it], fibs[it]) }
 
+        @Suppress(Warnings.UNUSED_VARIABLE)
         val ` ` = fibs[400000] // should not throw
 
         assertEquals(12586269025, fibs[49])
