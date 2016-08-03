@@ -2,6 +2,7 @@ package ru.spbstu.collections.persistent
 
 import kotlinx.Warnings
 import ru.spbstu.collections.persistent.Bits.get
+import ru.spbstu.collections.persistent.impl.Wrapper
 import ru.spbstu.collections.persistent.log2ceil
 import java.util.*
 
@@ -178,3 +179,17 @@ data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator
 }
 
 operator fun <E> PersistentVector<E>.iterator() = PersistentVectorIterator(this)
+
+class PersistentVectorList<E>(override val inner: PersistentVector<E>):
+        ru.spbstu.collections.persistent.impl.AbstractList<E>(),
+        Wrapper<PersistentVector<E>> {
+    override val size: Int
+        get() = inner.size
+
+    override fun get(index: Int) = withInner { get(index)!! }
+
+    override fun subList(fromIndex: Int, toIndex: Int): List<E> {
+        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+}

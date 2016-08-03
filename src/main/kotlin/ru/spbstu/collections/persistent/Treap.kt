@@ -1,10 +1,12 @@
 package ru.spbstu.collections.persistent
 
 import kotlinx.Warnings
+import ru.spbstu.collections.persistent.impl.Wrapper
 import java.util.*
 import java.util.concurrent.*
 
-inline fun treap_id(t: Any?) = t as Treap<Comparable<Any?>, Any?>
+@Suppress(Warnings.NOTHING_TO_INLINE, Warnings.UNCHECKED_CAST)
+inline fun forceCastToTreap(t: Any?) = t as Treap<Comparable<Any?>, Any?>
 
 data class Treap<E: Comparable<E>, out P>(
         val key: E,
@@ -20,7 +22,7 @@ data class Treap<E: Comparable<E>, out P>(
 
     override fun equals(other: Any?): Boolean =
         if(other is Treap<*,*>)
-            iteratorEquals(iterator(), treap_id(other).iterator())
+            iteratorEquals(iterator(), forceCastToTreap(other).iterator())
         else false
 
     override fun hashCode() =
@@ -73,6 +75,15 @@ operator fun<E: Comparable<E>, P> Treap<E, P>?.contains(x: E): Boolean =
         key > x            -> left.contains(x)
         else /* key > x */ -> right.contains(x)
     }
+
+fun<E: Comparable<E>, P> Treap<E, P>?.getSubTree(x: E): Treap<E, P>? =
+        when{
+            this == null       -> null
+            key == x           -> this
+            key > x            -> left.getSubTree(x)
+            else /* key > x */ -> right.getSubTree(x)
+        }
+
 fun<E: Comparable<E>, P> Treap<E, P>?.min(): E? =
         when(this){
             null -> null
@@ -89,6 +100,13 @@ val<E: Comparable<E>, P> Treap<E, P>?.size: Int
         when(this) {
             null -> 0
             else -> 1 + left.size + right.size
+        }
+
+val<E: Comparable<E>, P> Treap<E, P>?.height: Int
+    get() =
+        when(this) {
+            null -> 0
+            else -> Math.max(left.height, right.height) + 1
         }
 
 infix fun<E: Comparable<E>, P> Treap<E, P>?.union(that: Treap<E, P>?) : Treap<E, P>? {
@@ -146,56 +164,47 @@ inline operator fun<E> ExecutorService.invoke(noinline c: () -> E): Future<E> = 
 @Suppress(Warnings.NOTHING_TO_INLINE)
 inline operator fun<E> ForkJoinPool.invoke(noinline c: () -> E): ForkJoinTask<E> = submit(c)
 
-class UnionTask<E: Comparable<E>, P>(val `this`: Treap<E, P>?, val that: Treap<E, P>?,
-                                     val pool: ExecutorService = Executors.newCachedThreadPool(),
-                                     val factor: Int = Runtime.getRuntime().availableProcessors()/2): Callable<Treap<E, P>?> {
-    @Suppress(Warnings.NOTHING_TO_INLINE)
-    inline fun recurse(lhv: Treap<E, P>?, rhv: Treap<E, P>?) = pool.submit(UnionTask(lhv, rhv, pool, factor/2))
-
-    override fun call(): Treap<E, P>? {
-        if(factor == 0) return `this` union that
-
-        `this` ?: return that
-        that ?: return `this`
-
-        val (T1, T2) =
-                if(`this`.priority < that.priority) Pair(that, `this`)
-                else Pair(`this`, that)
-
-        val (L, R) = T2.split(T1.key)
-        val leftF = recurse(T1.left, L)
-        val rightF = recurse(T1.right, R)
-
-        return T1.copy(left = leftF.get(), right = rightF.get())
-    }
-}
-
 fun<E: Comparable<E>, P> Treap<E, P>?.punion(that: Treap<E, P>?,
-                                             pool: ExecutorService = Executors.newCachedThreadPool()) : Treap<E, P>? {
+                                             pool: ExecutorService = Executors.newCachedThreadPool(),
+                                             factor: Int = Runtime.getRuntime().availableProcessors() / 2) : Treap<E, P>? {
+    if(factor == 0) return this union that
 
-    return pool.submit(UnionTask(this, that, pool)).get()
+    this ?: return that
+    that ?: return this
+
+    val (T1, T2) =
+            if(this.priority < that.priority) Pair(that, this)
+            else Pair(this, that)
+
+    val (L, R) = T2.split(T1.key)
+    val leftTask = pool.invoke { T1.left.punion(L, pool, factor/2) }
+    val right = T1.right.punion(R, pool, factor/2)
+
+    return T1.copy(left = leftTask.get(), right = right)
 }
 
 fun<E: Comparable<E>, P> Treap<E, P>?.pintersect(that: Treap<E, P>?,
-                                                 pool: ForkJoinPool = ForkJoinPool.commonPool()) : Treap<E, P>? {
+                                                 pool: ExecutorService = Executors.newCachedThreadPool(),
+                                                 factor: Int = Runtime.getRuntime().availableProcessors() / 2) : Treap<E, P>? {
     this ?: return null
     that ?: return null
 
     if(this.priority < that.priority) return that intersect this
 
     val (L, R, Dup) = that.split(this.key)
-    val Ltask = pool.invoke { this.left.pintersect(L, pool) }
-    val Rtask = pool.invoke { this.right.pintersect(R, pool) }
+    val leftTask = pool.invoke { this.left.pintersect(L, pool, factor/2) }
+    val right = this.right.pintersect(R, pool, factor/2)
 
     if(!Dup) {
-        return Ltask.join() merge Rtask.join()
+        return leftTask.get() merge right
     } else {
-        return this.copy(left = Ltask.join(), right = Rtask.join())
+        return this.copy(left = leftTask.get(), right = right)
     }
 }
 
 fun<E: Comparable<E>, P> pdifference(left: Treap<E, P>?, right: Treap<E, P>?, rightFromLeft: Boolean,
-                                     pool: ForkJoinPool = ForkJoinPool.commonPool()) : Treap<E, P>? {
+                                     pool: ExecutorService = Executors.newCachedThreadPool(),
+                                     factor: Int = Runtime.getRuntime().availableProcessors() / 2) : Treap<E, P>? {
     if(left == null || right == null) {
         return if(rightFromLeft) left else right
     }
@@ -204,13 +213,13 @@ fun<E: Comparable<E>, P> pdifference(left: Treap<E, P>?, right: Treap<E, P>?, ri
 
     val(L, R, Dup) = right.split(left.key)
 
-    val Ltask = pool.invoke { pdifference(left.left, L, rightFromLeft, pool)  }
-    val Rtask = pool.invoke { pdifference(left.right, R, rightFromLeft, pool) }
+    val leftTask = pool.invoke { pdifference(left.left, L, rightFromLeft, pool, factor/2)  }
+    val right = pdifference(left.right, R, rightFromLeft, pool, factor/2)
 
     if(!Dup && rightFromLeft) {
-        return left.copy(left = Ltask.join(), right = Rtask.join())
+        return left.copy(left = leftTask.get(), right = right)
     } else {
-        return Ltask.join() merge Rtask.join()
+        return leftTask.get() merge right
     }
 }
 
@@ -243,19 +252,30 @@ operator fun<E: Comparable<E>> Treap.Companion.invoke(e: E): Treap<E, Unit>? = T
 operator fun<E: Comparable<E>> Treap.Companion.invoke(vararg e: E): Treap<E, Unit>?
         = e.fold(invoke()){ t, e -> t.add(e) }
 
-data class TreapSet<E: Comparable<E>>(val inner: Treap<E, Unit>? = null): Set<E> {
+class TreapSet<E: Comparable<E>>(override val inner: Treap<E, Unit>? = null):
+        ru.spbstu.collections.persistent.impl.AbstractSet<E>(),
+        Wrapper<Treap<E, Unit>?> {
     override val size: Int by lazy { inner.size }
 
-    override fun contains(element: E) = inner.contains(element)
+    override fun contains(element: E) = withInner { contains(element) }
 
-    override fun containsAll(elements: Collection<E>) =
-            when(elements) {
-                is TreapSet<E> -> this.inner pge elements.inner
-                else -> elements.all { contains(it) }
-            }
+    override fun containsAll(elements: Collection<E>) = withInner {
+        when(elements) {
+            is TreapSet<E> -> this pge elements.inner
+            else -> super.containsAll(elements)
+        }
+    }
 
-    override fun isEmpty()
-        = size == 0
+    override fun iterator() = withInner { iterator() }
+}
 
-    override fun iterator() = TreapIterator(inner)
+class TreapMap<K: Comparable<K>, V>(override val inner: Treap<K, V>? = null):
+        ru.spbstu.collections.persistent.impl.AbstractMap<K, V>(),
+        Wrapper<Treap<K, V>?> {
+    override fun containsKey(key: K) = key in inner
+
+    override fun get(key: K): V? = inner.getSubTree(key)?.payload
+
+    override val size: Int by lazy { inner.size }
+
 }

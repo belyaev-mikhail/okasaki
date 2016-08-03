@@ -113,42 +113,14 @@ operator fun<E> ImTreap.Companion.invoke(e: E): ImTreap<E> = ImTreap(e)
 operator fun<E> ImTreap.Companion.invoke(vararg e: E): ImTreap<E>?
         = e.fold(invoke()){ t, e -> t.add(e) }
 
-data class ImTreapList<E>(val inner: ImTreap<E>? = null): List<E> {
+class ImTreapList<E>(val inner: ImTreap<E>? = null): ru.spbstu.collections.persistent.impl.AbstractList<E>() {
     override val size: Int
         get() = inner.size
 
-    override fun contains(element: E): Boolean {
-        for(e in inner) if(e == element) return true
-        return false
-    }
-    override fun containsAll(elements: Collection<E>) = elements.all { contains(it) }
     override fun get(index: Int) = inner.get(index)
-    override fun indexOf(element: E): Int {
-        var ix = 0
-        for(e in inner) {
-            if(element == e) return ix
-            ++ix
-        }
-        return -1;
-    }
-    override fun isEmpty() = size == 0
+
     override fun iterator() = ImTreapIterator(inner)
-    override fun lastIndexOf(element: E): Int {
-        var ix = 0
-        var ret = -1
-        for(e in inner) {
-            if(element == e) ret = ix
-            ++ix
-        }
-        return ret;
-    }
-    override fun listIterator(): ListIterator<E> {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-    override fun listIterator(index: Int): ListIterator<E> {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-    override fun subList(fromIndex: Int, toIndex: Int): List<E> {
-        return ImTreapList(inner.subList(fromIndex, toIndex))
-    }
+
+    override fun subList(fromIndex: Int, toIndex: Int): List<E> =
+            ImTreapList(inner.subList(fromIndex, toIndex))
 }

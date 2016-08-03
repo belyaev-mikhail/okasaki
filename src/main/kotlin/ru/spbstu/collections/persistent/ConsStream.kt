@@ -86,11 +86,11 @@ operator fun<E> ConsStream<E>.plus(e: E) = add(e)
 fun<E> ConsStream<E>.asSequence() = ConsStreamSeq<E>(this)
 operator fun<E> ConsStream<E>.iterator() = asSequence().iterator()
 
-data class ConsStreamSeq<E>(var stream: ConsStream<E>?): Sequence<E> {
-    override fun iterator() = object: Iterator<E> {
-        override fun hasNext() = stream != null
-        override fun next() =
-                if(stream == null) throw NoSuchElementException()
-                else stream!!.head.apply { stream = stream?.tail }
-    }
+data class ConsStreamSeq<E>(var stream: ConsStream<E>?): Sequence<E>, Iterator<E> {
+    override fun hasNext() = stream != null
+    override fun next() =
+            if(stream == null) throw NoSuchElementException()
+            else stream!!.head.apply { stream = stream?.tail }
+
+    override fun iterator() = this
 }

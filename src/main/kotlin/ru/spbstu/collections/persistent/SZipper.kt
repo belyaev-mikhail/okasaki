@@ -1,5 +1,7 @@
 package ru.spbstu.collections.persistent
 
+import java.util.*
+
 data class SZipper<E>
         private constructor(
                 val right: SList<E>? = null,
@@ -131,4 +133,21 @@ data class SZipperIterator<E>(var data: SZipper<E>): ListIterator<E> {
     }
     override fun nextIndex() = data.cursor
     override fun hasNext() = data.right != null
+}
+
+class SZipperList<E>(val zipper: SZipper<E>): ru.spbstu.collections.persistent.impl.AbstractList<E>() {
+    override fun subList(fromIndex: Int, toIndex: Int) =
+            SZipperList(zipper.subList(fromIndex, toIndex))
+
+    override fun listIterator(): ListIterator<E> =
+            zipper.iterator()
+
+    override fun listIterator(index: Int): ListIterator<E> =
+            zipper.iterator(index)
+
+    override fun get(index: Int): E =
+            zipper.get(index)
+
+    override val size: Int
+        get() = zipper.size
 }

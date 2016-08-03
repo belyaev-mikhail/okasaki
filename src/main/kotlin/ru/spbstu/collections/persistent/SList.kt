@@ -1,5 +1,6 @@
 package ru.spbstu.collections.persistent
 
+import kotlinx.Warnings
 import java.util.*
 
 data class SList<out E>(val head: E, val tail: SList<E>? = null) {
@@ -46,7 +47,7 @@ inline fun <E, R> SList<E>?.map(f: (E) -> R): SList<R>? =
 
 val <E> SList<E>?.size: Int
         get() = foldLeft(0){ a, `#` -> a + 1 }
-inline fun <E> SList<E>?.splitRevAt(index: Int): Pair<SList<E>?, SList<E>?> {
+fun <E> SList<E>?.splitRevAt(index: Int): Pair<SList<E>?, SList<E>?> {
     var mutIndex = index
     var mutList = this
     var mutBackList: SList<E>? = null
@@ -66,6 +67,7 @@ inline fun <E> SList<E>?.splitRevAt(predicate: (E) -> Boolean): Pair<SList<E>?, 
     }
     return Pair(mutBackList, mutList)
 }
+@Suppress(Warnings.NOTHING_TO_INLINE)
 inline fun<E> mergeRev(reversed: SList<E>?, rest: SList<E>?) =
         reversed.foldLeft(rest){ a, b -> SList(b, a) }
 inline fun<E> SList<E>?.mutateAt(index: Int, f: (SList<E>?) -> SList<E>?): SList<E>? {
@@ -80,18 +82,18 @@ inline fun<E> SList<E>?.find(predicate: (E) -> Boolean): E? = splitRevAt(predica
 inline fun<E> SList<E>?.removeAt(predicate: (E) -> Boolean): SList<E>? =
     mutateAt(predicate){ it?.tail }
 
-inline fun<E> SList<E>?.drop(index: Int): SList<E>? =
+fun<E> SList<E>?.drop(index: Int): SList<E>? =
         if(index == 0) this
         else (0..(index-1)).fold(this){ l, ` ` -> l?.tail }
-inline fun<E> SList<E>?.take(index: Int): SList<E>? =
+fun<E> SList<E>?.take(index: Int): SList<E>? =
         splitRevAt(index).first.reverse()
-inline fun<E> SList<E>?.subList(from: Int, to: Int) =
+fun<E> SList<E>?.subList(from: Int, to: Int) =
         drop(from).take(to - from)
 
-inline fun<E> SList<E>?.addAll(that: SList<E>?) = mergeRev(reverse(), that)
-inline fun<E> SList<E>?.add(element: E) = addAll(SList(element))
+fun<E> SList<E>?.addAll(that: SList<E>?) = mergeRev(reverse(), that)
+fun<E> SList<E>?.add(element: E) = addAll(SList(element))
 
-inline fun<E> SList<E>?.addAll(index: Int, that: SList<E>?) =
+fun<E> SList<E>?.addAll(index: Int, that: SList<E>?) =
     when(index) {
         0 -> that.addAll(this)
         else -> {
@@ -99,7 +101,7 @@ inline fun<E> SList<E>?.addAll(index: Int, that: SList<E>?) =
             mergeRev(l, that).addAll(r)
         }
     }
-inline fun<E> SList<E>?.add(index: Int, element: E) = addAll(index, SList(element))
+fun<E> SList<E>?.add(index: Int, element: E) = addAll(index, SList(element))
 
 operator fun<E> SList<E>?.plus(that: SList<E>?) = addAll(that)
 operator fun<E> E.plus(that: SList<E>?) = SList(this, that)
@@ -117,15 +119,8 @@ data class SListIterator<E>(var list: SList<E>?): Iterator<E> {
     }
 }
 
-class SListList<E>(private val impl: SList<E>? = null) : List<E> {
-    override val size: Int = impl.size
-
-    override fun contains(element: E): Boolean {
-        for(e in this) if(e == element) return true
-        return false
-    }
-
-    override fun containsAll(elements: Collection<E>) = elements.all { contains(it) }
+class SListList<E>(private val impl: SList<E>? = null) : ru.spbstu.collections.persistent.impl.AbstractList<E>() {
+    override val size: Int by lazy{ impl.size }
 
     override fun get(index: Int): E {
         if(impl == null || index < 0)
@@ -138,33 +133,15 @@ class SListList<E>(private val impl: SList<E>? = null) : List<E> {
         throw IndexOutOfBoundsException()
     }
 
-    override fun indexOf(element: E): Int {
-        var ix = 0
-        for(e in this){
-            if(e == element) return ix
-            ++ix
-        }
-        return -1
-    }
-
-    override fun isEmpty() = size == 0
-
     override fun iterator() = SListIterator(impl)
 
-    override fun lastIndexOf(element: E): Int {
-        val rev = SListList(impl.reverse())
-        val ix = rev.indexOf(element)
-        if(ix == -1) return -1
-        return size - ix
-    }
+    override fun listIterator(): ListIterator<E> =
+            SZipper(impl).iterator()
 
-    override fun listIterator(): ListIterator<E>
-        = SZipper(impl).iterator()
-
-    override fun listIterator(index: Int)
-        = SZipper(impl).iterator(index)
+    override fun listIterator(index: Int) =
+            SZipper(impl).iterator(index)
 
     override fun subList(fromIndex: Int, toIndex: Int) =
-        SListList(impl.subList(fromIndex, toIndex))
+            SListList(impl.subList(fromIndex, toIndex))
 }
 

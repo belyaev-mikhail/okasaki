@@ -7,6 +7,7 @@ import java.util.concurrent.ForkJoinPool
 import kotlin.system.measureTimeMillis
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class TreapTest {
 
@@ -70,12 +71,15 @@ class TreapTest {
             testSimple(Treap(r), Treap(-r))
         }
 
-        10.times{
+        100.times{
             val threshold = rand.nextInt(5000) + 1 // should not be zero
             val data0 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
             val data1 = rand.ints(threshold.toLong(), -threshold, threshold).toArray()
             val t0 = data0.fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
             val t1 = data1.fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
+
+            assertTrue(t0.height <= log2ceil(t0.size) * 4)
+            assertTrue(t1.height <= log2ceil(t1.size) * 4)
 
             for(e in data0) { assert(e in t0) }
             for(e in data1) { assert(e in t1) }
@@ -89,19 +93,6 @@ class TreapTest {
             testSimple(t0, t1 + t0)
         }
 
-        10.times {
-            val pool = Executors.newFixedThreadPool(8)
-            val threshold = rand.nextInt(5000000) + 1 // should not be zero
-            val t0 = rand.ints(threshold.toLong(), -threshold, threshold)
-                    .asSequence().fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
-            val t1 = rand.ints(threshold.toLong(), -threshold, threshold)
-                    .asSequence().fold(Treap<Int, Unit>()){ t, e -> t.add(e) }
-
-            measureTimeMillis { t0.union(t1) }.let { println(it) }
-            measureTimeMillis { t0.punion(t1, pool) }.let { println(it) }
-
-            //val t3 = t0.pintersect(t1)
-        }
     }
 
     @Test

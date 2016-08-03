@@ -21,7 +21,7 @@ class PersistentVectorTest {
         testSimple(3, PersistentVector.ofCollection(listOf(1,2,3)))
 
         20.times{
-            val size = rand.nextInt(50000) + 1
+            val size = rand.nextInt(5000) + 1
             val t = rand.ints(size.toLong()).toArray()
 
             val sl = PersistentVector.ofCollection(t.toList())
