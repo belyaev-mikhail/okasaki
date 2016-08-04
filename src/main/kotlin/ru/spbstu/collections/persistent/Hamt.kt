@@ -31,7 +31,10 @@ object HamtScope {
 data class Hamt<E> internal constructor(val root: HamtNode<E>, val size: Int) {
 }
 
-internal data class HamtNode<E>(val bitMask: Int, val storage: Array<Any?> = Array(32){ null }) {
+internal data class HamtNode<E>(
+        val bitMask: Int,
+        val storage: Array<Any?> = Array(32){ null }
+) {
     override fun equals(other: Any?) = this === other
     override fun hashCode(): Int = System.identityHashCode(this)
 }
