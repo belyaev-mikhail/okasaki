@@ -79,6 +79,7 @@ inline fun<E> SList<E>?.mutateAt(predicate: (E) -> Boolean, f: (SList<E>?) -> SL
     return mergeRev(l, f(r))
 }
 inline fun<E> SList<E>?.find(predicate: (E) -> Boolean): E? = splitRevAt(predicate).second?.head
+operator fun<E> SList<E>?.contains(element: Any?) = iterator().asSequence().any { it == element }
 inline fun<E> SList<E>?.removeAt(predicate: (E) -> Boolean): SList<E>? =
     mutateAt(predicate){ it?.tail }
 
