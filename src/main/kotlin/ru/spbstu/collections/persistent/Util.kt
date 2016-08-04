@@ -60,6 +60,9 @@ object Bits {
     }
 
     @Suppress(Warnings.NOTHING_TO_INLINE)
+    inline fun Int.setBit(at: Int) = this or (1 shl at)
+
+    @Suppress(Warnings.NOTHING_TO_INLINE)
     inline operator fun Long.get(at: Int): Long = (this shr at) and 1
 
     @Suppress(Warnings.NOTHING_TO_INLINE)
@@ -137,3 +140,9 @@ internal inline infix fun <E, R> (() -> R).andReturn(v: E): E {
 internal inline infix fun <E, R> E.butAlso(body: () -> R): E {
     body(); return this
 }
+
+data class Assign<K, V>(val key: K, val value: V)
+
+infix fun<K, V> K.`=`(value: V) = Assign(this, value)
+infix fun<K, V> K.assignTo(value: V) = Assign(this, value)
+operator fun<V> Array<V>.get(vararg a: Assign<Int, V>) = this.copyOf().apply { a.forEach { this[it.key] = it.value } }
