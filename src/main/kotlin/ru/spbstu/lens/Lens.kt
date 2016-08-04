@@ -110,6 +110,7 @@ fun <A, B> Lens<A, B>.preserveUniques() =
         )
 
 fun <T> idLens(): Lens<T, T> = Lens(get = { this }, set = { it })
+val incLens: Lens<Int, Int> = Lens(get = { this + 1 }, set = { it - 1 })
 
 fun <A, B> firstLens(): Lens<Pair<A, B>, A> = Lens(get = { first }, set = { copy(first = it) })
 fun <A, B> secondLens(): Lens<Pair<A, B>, B> = Lens(get = { second }, set = { copy(second = it) })
