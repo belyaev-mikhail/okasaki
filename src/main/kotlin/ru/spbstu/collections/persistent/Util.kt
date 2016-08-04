@@ -1,5 +1,6 @@
 package ru.spbstu.collections.persistent
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import kotlinx.Warnings
 import java.util.*
 import java.util.stream.BaseStream
@@ -146,3 +147,4 @@ data class Assign<K, V>(val key: K, val value: V)
 infix fun<K, V> K.`=`(value: V) = Assign(this, value)
 infix fun<K, V> K.assignTo(value: V) = Assign(this, value)
 operator fun<V> Array<V>.get(vararg a: Assign<Int, V>) = this.copyOf().apply { a.forEach { this[it.key] = it.value } }
+
