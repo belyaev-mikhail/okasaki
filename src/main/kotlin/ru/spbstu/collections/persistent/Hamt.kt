@@ -154,7 +154,7 @@ internal data class HamtNode<E>(
         if(bitMask and bit != 0) {
             val thing = storage[index]
             when(thing) {
-                is HamtNode<*> -> {// branch
+                is HamtNode<*> -> { // branch
                     val sub = forceNode<E>(thing).erase(key, depth + 1, hash)
                     setOrEraseImmediateNode(bit, index, sub)
                 }
