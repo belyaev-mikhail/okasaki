@@ -45,17 +45,23 @@ infix fun <E> BinomialHeap<E>.merge(that: BinomialHeap<E>): BinomialHeap<E> {
     return copy(max = cmpOpt.max(this.max, that.max), nodes = nodes.reverse())
 }
 
-fun <E> BinomialHeap(element: E, cmp: Comparator<E>) =
+fun <E> binomialHeapOf(element: E, cmp: Comparator<E>) =
         BinomialHeap(SList(BinomialHeapNode(element)), cmp.nullsFirst())
 
-fun <E> BinomialHeap(cmp: Comparator<E>) =
-        BinomialHeap(SList(), cmp.nullsFirst())
+fun <E> binomialHeapOf(cmp: Comparator<E>) =
+        BinomialHeap(sListOf(), cmp.nullsFirst())
 
-fun <E> BinomialHeap(element: E, cmp: (E, E) -> Int) =
-        BinomialHeap(SList(BinomialHeapNode(element)), Comparator(cmp).nullsFirst())
+fun <E> binomialHeapOf(element: E, cmp: (E, E) -> Int) =
+        BinomialHeap(sListOf(BinomialHeapNode(element)), Comparator(cmp).nullsFirst())
 
-fun <E> BinomialHeap(vararg element: E, cmp: Comparator<E>) =
-        element.map { BinomialHeap(it, cmp) }.reduce { lh, rh -> lh merge rh }
+fun <E> binomialHeapOf(vararg element: E, cmp: Comparator<E>) =
+        element.map { binomialHeapOf(it, cmp) }.reduce { lh, rh -> lh merge rh }
+
+fun <E: Comparable<E>> binomialHeapOf(element: E) = binomialHeapOf(element, cmp = Comparator.naturalOrder())
+
+fun <E: Comparable<E>> binomialHeapOf() = binomialHeapOf(cmp = Comparator.naturalOrder<E>())
+
+fun <E: Comparable<E>> binomialHeapOf(vararg element: E) = binomialHeapOf(*element, cmp = Comparator.naturalOrder<E>())
 
 fun <E> BinomialHeap<E>.add(element: E) = this merge BinomialHeap(null, cmpOpt, element)
 

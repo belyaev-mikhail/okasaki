@@ -29,7 +29,7 @@ class SZipperTest {
         assertEquals(tt, t.addAll(0, t))
         assertEquals(tt, t.addAll(size, t))
 
-        val trt = t.addAll(size/2, SZipper(1, 2, 3))
+        val trt = t.addAll(size/2, sZipperOf(1, 2, 3))
         assertEquals(size + 3, trt.size)
         (0..(size/2 - 1)).forEach { trt[it] == t[it] }
         assertEquals(1, trt[size / 2])
@@ -38,7 +38,7 @@ class SZipperTest {
         ((size/2 + 3)..(size - 1)).forEach { trt[it] == t[it - 3] }
 
         val sub = trt.subList(size/2, size/2 + 3)
-        assertEquals(sub, SZipper.Companion(1, 2, 3))
+        assertEquals(sub, sZipperOf(1, 2, 3))
 
         assertEquals(t, t.subList(0, size))
     }
@@ -47,7 +47,7 @@ class SZipperTest {
     fun testRandom() {
         val rand = Random()
 
-        val hadBug = SZipper(1, 2, 3)
+        val hadBug = sZipperOf(1, 2, 3)
         testSimple(3, hadBug.setCursor(2))
 
         20.times {
@@ -59,8 +59,8 @@ class SZipperTest {
             testSimple(size, sl)
         }
 
-        testSimple(0, SZipper(null))
-        testSimple(1, SZipper(2))
+        testSimple(0, sZipperOf())
+        testSimple(1, sZipperOf(2))
 
 
     }
