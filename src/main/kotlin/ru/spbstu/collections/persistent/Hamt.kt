@@ -98,7 +98,7 @@ internal data class HamtNode<E>(
         fun<E> makeNode(existing: E?, new: E?, newHash: Int, atDepth: Int): Any? {
             if(equiv(lhv = existing, rhv = new, rhvHashOpt = newHash)) return existing
             val oldHash = calcHash(existing)
-            if(newHash == oldHash) return SList(existing, new)
+            if(newHash == oldHash) return sListOf(existing, new)
             return forceNode<E>(EMPTY)
                     .put(existing, atDepth, oldHash)
                     .put(new, atDepth, newHash)

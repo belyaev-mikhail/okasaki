@@ -45,18 +45,14 @@ abstract class AbstractMap<K, V> : Map<K, V> {
 
     override fun isEmpty() = size == 0
 
-    override fun equals(other: Any?): Boolean {
-        if(other === this) return true
-        if(other !is Map<*,*>) return false
+    override fun equals(other: Any?) =
+        when{
+            other === this -> true
+            other !is Map<*, *> -> false
+            else -> entries == other.entries
+        }
 
-        return entries == other.entries
-    }
+    override fun hashCode() = entries.hashCode()
 
-    override fun hashCode(): Int {
-        return entries.hashCode()
-    }
-
-    override fun toString(): String {
-        return entries.toString()
-    }
+    override fun toString() = entries.toString()
 }
