@@ -1,4 +1,4 @@
-# Okasaki@Kotline #
+# Okasaki@Kotlin #
 
 Implementations of some persistent data structures (not restricted to those described in the book by Chris Okasaki) in Kotlin.
 
