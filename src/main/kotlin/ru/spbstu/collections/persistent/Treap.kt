@@ -298,6 +298,17 @@ fun <E : Comparable<E>, P> treapOf(): Treap<E, P> = Treap(cmp = Comparator.natur
 fun <E : Comparable<E>> treapOf(e: E): Treap<E, Unit> = Treap(e, Unit, cmp = Comparator.naturalOrder())
 fun <E : Comparable<E>> treapOf(vararg e: E): Treap<E, Unit>
         = e.fold(treapOf()) { t, e -> t.add(e) }
+fun <E : Comparable<E>, P> treapOf(e: Pair<E, P>): Treap<E, P> = Treap(e.first, e.second, cmp = Comparator.naturalOrder())
+fun <E : Comparable<E>, P> treapOf(vararg e: Pair<E, P>): Treap<E, P>
+        = e.fold(treapOf()) { t, e -> t.add(e.first, e.second) }
+
+fun <E, P> treapOf(cmp: Comparator<E>): Treap<E, P> = Treap(cmp = cmp)
+fun <E> treapOf(e: E, cmp: Comparator<E>): Treap<E, Unit> = Treap(e, Unit, cmp = cmp)
+fun <E> treapOf(vararg e: E, cmp: Comparator<E>): Treap<E, Unit>
+        = e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e) }
+fun <E, P> treapOf(e: Pair<E, P>, cmp: Comparator<E>): Treap<E, P> = Treap(e.first, e.second, cmp = cmp)
+fun <E, P> treapOf(vararg e: Pair<E, P>, cmp: Comparator<E>): Treap<E, P>
+        = e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e.first, e.second) }
 
 class TreapSet<E>(override val inner: Treap<E, Unit>) :
         ru.spbstu.collections.persistent.impl.AbstractSet<E>(),
