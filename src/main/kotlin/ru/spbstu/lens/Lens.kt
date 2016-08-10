@@ -1,5 +1,6 @@
 package ru.spbstu.lens
 
+import ru.spbstu.collections.persistent.`=`
 import java.util.*
 
 
