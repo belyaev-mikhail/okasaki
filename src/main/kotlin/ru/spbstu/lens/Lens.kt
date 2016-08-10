@@ -27,6 +27,17 @@ fun <A, B, R> Lens<A, B>.bimap(fwd: (B) -> R, bwd: (R) -> B) = this.let { outer 
     )
 }
 
+infix fun <A, B, C> Lens<A, B>.zip(rhv: Lens<A, C>): Lens<A, Pair<B, C>> = this.let {
+    lhv ->
+        Lens(
+                get = { Pair(lhv(this), rhv(this)) },
+                set = { pair ->
+                    val (l, r) = pair
+                    rhv(lhv(this, l), r)
+                }
+        )
+}
+
 fun <A, B> group(vararg lens: Lens<A, B>): Lens<A, List<B>> =
         Lens(
                 get = { lens.map { (it.get)() } },
@@ -112,10 +123,40 @@ fun <A, B> Lens<A, B>.preserveUniques() =
 fun <T> idLens(): Lens<T, T> = Lens(get = { this }, set = { it })
 val incLens: Lens<Int, Int> = Lens(get = { this + 1 }, set = { it - 1 })
 
-fun <A, B> firstLens(): Lens<Pair<A, B>, A> = Lens(get = { first }, set = { copy(first = it) })
-fun <A, B> secondLens(): Lens<Pair<A, B>, B> = Lens(get = { second }, set = { copy(second = it) })
+class Lenser<O, R>(val lens: Lens<O, R>){
+    val set = lens.set
+    val get = lens.get
+}
 
 class PairLenser<A, B> {
-    val first = firstLens<A, B>()
-    val second = secondLens<A, B>()
+    val first: Lens<Pair<A, B>, A>  = Lens(get = { first },  set = { copy(first = it) })
+    val second: Lens<Pair<A, B>, B> = Lens(get = { second }, set = { copy(second = it) })
+}
+
+val<O, A, B> Lenser<O, Pair<A, B>>.pairFirst: Lenser<O, A>
+    get() = Lenser(lens + Lens(get = { first },  set = { copy(first = it) }))
+val<O, A, B> Lenser<O, Pair<A, B>>.pairSecond: Lenser<O, B>
+    get() = Lenser(lens + Lens(get = { second },  set = { copy(second = it) }))
+
+
+class TripleLenser<A, B, C> {
+    val first: Lens<Triple<A, B, C>, A>  = Lens(get = { first },  set = { copy(first = it) })
+    val second: Lens<Triple<A, B, C>, B> = Lens(get = { second }, set = { copy(second = it) })
+    val third: Lens<Triple<A, B, C>, C>  = Lens(get = { third },  set = { copy(third = it) })
+}
+
+val<O, A, B, C> Lenser<O, Triple<A, B, C>>.tripleFirst: Lenser<O, A>
+    get() = Lenser(lens + Lens(get = { first },  set = { copy(first = it) }))
+val<O, A, B, C> Lenser<O, Triple<A, B, C>>.tripleSecond: Lenser<O, B>
+    get() = Lenser(lens + Lens(get = { second },  set = { copy(second = it) }))
+val<O, A, B, C> Lenser<O, Triple<A, B, C>>.tripleThird: Lenser<O, C>
+    get() = Lenser(lens + Lens(get = { third },  set = { copy(third = it) }))
+
+
+class ArrayLenser<A> {
+    operator fun get(index: Int): Lens<Array<A>, A> =
+            Lens(
+                    get = { this[index] },
+                    set = { newElement -> this.copyOf().apply { set(index, newElement) } }
+            )
 }
