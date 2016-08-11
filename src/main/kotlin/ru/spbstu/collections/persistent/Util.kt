@@ -152,3 +152,8 @@ val<A, B> Either<A, B>.maybeRight: B?
     get() = when(this){ is Right -> value; else -> null }
 val<A> Either<A, A>.value: A
     get() = when(this){ is Left -> value; is Right -> value; else -> throw NoSuchFieldError() }
+
+@JvmName("toLeftOption")
+fun<A> Either<A, Unit>.toOption() = maybeLeft
+@JvmName("toRightOption")
+fun<A> Either<Unit, A>.toOption() = maybeRight
