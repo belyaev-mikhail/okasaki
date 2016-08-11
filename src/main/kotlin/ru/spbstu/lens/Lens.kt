@@ -112,11 +112,11 @@ inline fun <A> Lens<A, A>.doWhileWithIndex(crossinline predicate: A.(Int) -> Boo
             )
         }
 
-fun <A, B> Lens<A, B>.preserveUniques() =
-        Lens(
-                get = this.get,
-                set = { param -> get().let { if (it === param) this else this@preserveUniques(this, param) } }
-        )
+fun <A, B> Lens<A, B>.preserveUniques() = this.let { lens ->
+    lens.copy(
+            set = { param -> if (lens(this) === param) this else lens(this, param) }
+    )
+}
 
 fun <A, B> Lens<A, B>.nullable(): Lens<A?, B?> = this.let { outer ->
     Lens(

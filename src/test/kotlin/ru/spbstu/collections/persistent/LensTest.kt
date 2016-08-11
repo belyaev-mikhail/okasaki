@@ -5,9 +5,6 @@ import ru.spbstu.lens.Lenser
 import ru.spbstu.lens.*
 import kotlin.test.assertEquals
 
-/**
- * Created by Kopcap on 11.08.2016.
- */
 class LensTest {
     @Test
     fun testSimple() {
