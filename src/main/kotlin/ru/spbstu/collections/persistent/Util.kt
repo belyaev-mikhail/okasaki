@@ -145,3 +145,10 @@ internal inline infix fun <E, R> E.butAlso(body: () -> R): E {
 interface Either<A, B>
 data class Left<A, B>(val value: A): Either<A, B>
 data class Right<A, B>(val value: B): Either<A, B>
+
+val<A, B> Either<A, B>.maybeLeft: A?
+    get() = when(this){ is Left -> value; else -> null }
+val<A, B> Either<A, B>.maybeRight: B?
+    get() = when(this){ is Right -> value; else -> null }
+val<A> Either<A, A>.value: A
+    get() = when(this){ is Left -> value; is Right -> value; else -> throw NoSuchFieldError() }
