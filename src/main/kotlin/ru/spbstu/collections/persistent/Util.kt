@@ -142,9 +142,6 @@ internal inline infix fun <E, R> E.butAlso(body: () -> R): E {
     body(); return this
 }
 
-data class Assign<K, V>(val key: K, val value: V)
-
-infix fun<K, V> K.`=`(value: V) = Assign(this, value)
-infix fun<K, V> K.assignTo(value: V) = Assign(this, value)
-operator fun<V> Array<V>.get(vararg a: Assign<Int, V>) = this.copyOf().apply { a.forEach { this[it.key] = it.value } }
-
+interface Either<A, B>
+data class Left<A, B>(val value: A): Either<A, B>
+data class Right<A, B>(val value: B): Either<A, B>

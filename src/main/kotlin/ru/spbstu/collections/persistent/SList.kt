@@ -33,7 +33,7 @@ inline fun <E, R> SList<E>?.foldLeft(acc: R, trans: (R, E) -> R): R {
     return mutAcc
 }
 
-fun<E> SList<E>?.iterator() = SListIterator(this)
+operator fun<E> SList<E>?.iterator() = SListIterator(this)
 fun<E> SList<E>?.asIterable(): Iterable<E> = if(this == null) emptyList() else this
 
 fun <E> SList<E>?.reverse() = foldLeft(sListOf<E>()) { a, b -> SList(b, a) }

@@ -28,7 +28,7 @@ object HamtScope {
         get() = if (this == 0) 0 else powBF(logBFfloor(this))
 
     internal fun <E> Array<E>.immSet(index: Int, element: E) =
-            if(this[index] === element) this else this[index assignTo element]
+            if(this[index] === element) this else copyOf().apply{ this[index] = element }
     internal fun <E> Array<E>.immSetOrRemove(index: Int, element: E?) =
             if(element == null) immRemove(index)
             else immSet(index, element)
