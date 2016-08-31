@@ -176,3 +176,25 @@ internal data class HamtNode<E>(
     override fun equals(other: Any?) = this === other
     override fun hashCode(): Int = System.identityHashCode(this)
 }
+
+internal fun<E> HamtNode<E>.toSequence(): Sequence<E> {
+    val subNodes = storage.asSequence().filterIsInstance<HamtNode<*>>()
+    val subValues = storage.asSequence().filter { it !is HamtNode<*> && it != null }
+
+    @Suppress(Warnings.UNCHECKED_CAST)
+    return (subValues + subNodes.flatMap { it.toSequence() }) as Sequence<E>
+}
+
+operator fun<E> Hamt<E>.iterator() = root.toSequence().iterator()
+
+fun<E> hamtOf(): Hamt<E> = Hamt<E>(@Suppress(Warnings.UNCHECKED_CAST)(HamtNode.EMPTY as HamtNode<E>), 0)
+fun<E> hamtOf(vararg elements: E): Hamt<E> = elements.fold(hamtOf<E>()){ hamt, e -> hamt.add(e) }
+
+class HamtSet<E>(val inner: Hamt<E>): ru.spbstu.collections.persistent.impl.AbstractSet<E>() {
+    override val size: Int
+        get() = inner.size
+
+    override fun iterator(): Iterator<E> = inner.iterator()
+
+    override fun contains(element: E) = inner.contains(element)
+}
