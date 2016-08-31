@@ -26,4 +26,26 @@ class LensTest {
         val array4 = Lenser(array)[1].first.second[1].mutate { it.toUpperCase() }
         assertEquals("HEllo", array4[1].first.second)
     }
+
+    @Test
+    fun testPrisms() {
+        val array = arrayOf(1,2,3,4,5)
+
+        val array2 = Lenser(array).getOrNull(8).set(20)
+
+        assertEquals(listOf(1,2,3,4,5,20,20,20,20), array2.asList())
+
+        val array3 = Lenser(array).getOrNull(3).set(null)
+
+        assertEquals(listOf(1,2,3,5), array3.asList())
+
+        val array4 = Lenser(array).insertionAt(3).set(42)
+
+        assertEquals(listOf(1,2,3,42,4,5), array4.asList())
+
+        val array5 = Lenser(array).insertionAt(8).set(20)
+
+        assertEquals(listOf(1,2,3,4,5,20,20,20,20), array5.asList())
+
+    }
 }

@@ -1,5 +1,7 @@
 package ru.spbstu.lens
 
+import java.util.*
+
 data class Lenser<O, R>(val obj: O, val lens: Lens<O, R>){
     fun set(value: R) = lens(obj, value)
     fun get() = lens(obj)
@@ -49,6 +51,59 @@ operator fun<O, A> Lenser<O, Array<A>>.get(index: Int): Lenser<O, A> =
         this + Lens(
                 get = { this[index] },
                 set = { newElement -> this.copyOf().apply { set(index, newElement) }}
+        )
+
+@JvmName("arrayGetOrNull")
+fun<O, A> Lenser<O, Array<A>>.getOrNull(index: Int): Lenser<O, A?> =
+        this + Lens(
+                get = { this.getOrNull(index) },
+                set = { newElement ->
+                    when {
+                        newElement == null && index in 0..(size-1) -> {
+                            val src = this
+                            val srcSize = size
+                            Arrays.copyOf(this, size - 1).apply {
+                                System.arraycopy(src, index + 1, this, index, srcSize - index - 1)
+                            }
+                        }
+                        newElement != null && index in 0..(size-1) -> this.copyOf().apply { set(index, newElement) }
+                        newElement != null && index >= size -> {
+                            val src = this
+                            val srcSize = size
+                            Arrays.copyOf(src, index + 1).apply {
+                                Arrays.fill(this, srcSize, index + 1, newElement)
+                            }
+                        }
+                        else -> throw IndexOutOfBoundsException("index = $index")
+                    }
+                }
+        )
+
+@JvmName("arrayInsertedAt")
+fun<O, A> Lenser<O, Array<A>>.insertionAt(index: Int): Lenser<O, A?> =
+        this + Lens(
+                get = { null },
+                set = { newElement ->
+                    when {
+                        newElement == null -> this
+                        index in 0..(size-1) -> {
+                            val src = this
+                            val srcSize = size
+                            Arrays.copyOf(src, srcSize + 1).apply {
+                                set(index, newElement)
+                                System.arraycopy(src, index, this, index + 1, srcSize - index)
+                            }
+                        }
+                        index >= size -> {
+                            val src = this
+                            val srcSize = size
+                            Arrays.copyOf(src, index + 1).apply {
+                                Arrays.fill(this, srcSize, index + 1, newElement)
+                            }
+                        }
+                        else -> throw IndexOutOfBoundsException("index = $index")
+                    }
+                }
         )
 
 object StringLenses {
