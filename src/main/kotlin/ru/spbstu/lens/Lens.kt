@@ -125,5 +125,20 @@ fun <A, B> Lens<A, B>.nullable(): Lens<A?, B?> = this.let { outer ->
     )
 }
 
+fun <A, B, C> Lens<A, B?>.safe(fwd: B.() -> C, bwd: B.(C) -> B): Lens<A, C?> = this.let{ outer ->
+    Lens(
+            get = {
+                 outer(this)?.fwd()
+            },
+            set = { c ->
+                val b = outer(this)
+                if(c == null || b == null) this
+                else outer(this, b.bwd(c))
+            }
+    )
+}
+
+fun <A, B, C> Lens<A, B?>.safe(mapping: Lens<B, C>): Lens<A, C?> = safe(mapping.get, mapping.set)
+
 fun <T> idLens(): Lens<T, T> = Lens(get = { this }, set = { it })
 val incLens: Lens<Int, Int> = Lens(get = { this + 1 }, set = { it - 1 })
