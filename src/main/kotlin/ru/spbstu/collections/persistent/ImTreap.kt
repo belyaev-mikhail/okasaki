@@ -1,5 +1,7 @@
 package ru.spbstu.collections.persistent
 
+import ru.spbstu.collections.persistent.impl.iteratorEquals
+import ru.spbstu.collections.persistent.impl.iteratorHash
 import java.util.*
 
 data class ImTreap<out E>(
@@ -110,8 +112,8 @@ operator fun<E> ImTreap<E>?.iterator() = ImTreapIterator(this)
 
 operator fun<E> ImTreap.Companion.invoke(): ImTreap<E>? = null
 operator fun<E> ImTreap.Companion.invoke(e: E): ImTreap<E> = ImTreap(e)
-operator fun<E> ImTreap.Companion.invoke(vararg e: E): ImTreap<E>?
-        = e.fold(invoke()){ t, e -> t.add(e) }
+operator fun<E> ImTreap.Companion.invoke(vararg es: E): ImTreap<E>?
+        = es.fold(invoke()){ t, e -> t.add(e) }
 
 class ImTreapList<E>(val inner: ImTreap<E>? = null): ru.spbstu.collections.persistent.impl.AbstractList<E>() {
     override val size: Int

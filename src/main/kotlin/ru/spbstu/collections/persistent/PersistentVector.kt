@@ -12,6 +12,8 @@ import ru.spbstu.collections.persistent.PersistentVectorScope.immSet
 import ru.spbstu.collections.persistent.PersistentVectorScope.BF
 import ru.spbstu.collections.persistent.PersistentVectorScope.BINARY_DIGITS
 import ru.spbstu.collections.persistent.PersistentVectorScope.DIGITS_MASK
+import ru.spbstu.collections.persistent.impl.iteratorEquals
+import ru.spbstu.collections.persistent.impl.iteratorHash
 
 object PersistentVectorScope {
     // clojure-style persistent vector is just an implicit segment tree with branching factor of 32

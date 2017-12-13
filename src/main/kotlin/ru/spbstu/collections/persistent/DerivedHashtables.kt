@@ -1,6 +1,10 @@
 package ru.spbstu.collections.persistent
 
 import kotlinx.Warnings
+import ru.spbstu.collections.persistent.slist.SList
+import ru.spbstu.collections.persistent.slist.add
+import ru.spbstu.collections.persistent.slist.find
+import ru.spbstu.collections.persistent.slist.removeAt
 
 data class PVectorHashtable<E>(private val holder: PersistentVector<SList<E>?>) {
 

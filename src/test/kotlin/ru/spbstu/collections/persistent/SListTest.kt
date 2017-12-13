@@ -1,6 +1,7 @@
 package ru.spbstu.collections.persistent
 
 import org.junit.Test
+import ru.spbstu.collections.persistent.slist.*
 import java.util.*
 import kotlin.test.assertEquals
 
@@ -25,7 +26,7 @@ class SListTest {
         assertEquals(tt, t.addAll(0, t))
         assertEquals(tt, t.addAll(size, t))
 
-        val trt = t.addAll(size/2, sListOf(1,2,3))
+        val trt = t.addAll(size/2, sListOf(1, 2, 3))
         assertEquals(size + 3, trt.size)
         (0..(size/2 - 1)).forEach { trt[it] == t[it] }
         assertEquals(1, trt[size/2])
@@ -34,7 +35,7 @@ class SListTest {
         ((size/2 + 3)..(size - 1)).forEach { trt[it] == t[it - 3] }
 
         val sub = trt.subList(size/2, size/2 + 3)
-        assertEquals(sub, sListOf(1,2,3))
+        assertEquals(sub, sListOf(1, 2, 3))
 
         assertEquals(t, t.subList(0, size))
     }

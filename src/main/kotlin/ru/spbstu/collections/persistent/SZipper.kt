@@ -1,7 +1,9 @@
 package ru.spbstu.collections.persistent
 
 import ru.spbstu.collections.persistent.impl.IterableWithDefaults
-import java.util.*
+import ru.spbstu.collections.persistent.impl.iteratorEquals
+import ru.spbstu.collections.persistent.impl.iteratorHash
+import ru.spbstu.collections.persistent.slist.*
 
 data class SZipper<E>
 private constructor(

@@ -52,15 +52,18 @@ data class Treap<E, P>(
     fun merge(that: Treap<E, P>) = copy(root = root merge that.root)
 
     fun Node<E, P>.split(onKey: E): Triple<Node<E, P>?, Node<E, P>?, Boolean> {
-        if (key == onKey) return Triple(left, right, true)
-        else if (key < onKey) {
-            right ?: return Triple(this, null, false)
-            val (RL, R, Dup) = right.split(onKey)
-            return Triple(this.copy(right = RL), R, Dup)
-        } else /* if key > onKey */ {
-            left ?: return Triple(null, this, false)
-            val (L, LR, Dup) = left.split(onKey)
-            return Triple(L, this.copy(left = LR), Dup)
+        when {
+            key == onKey -> return Triple(left, right, true)
+            key < onKey -> {
+                right ?: return Triple(this, null, false)
+                val (RL, R, Dup) = right.split(onKey)
+                return Triple(this.copy(right = RL), R, Dup)
+            }
+            else -> /* if key > onKey */ {
+                left ?: return Triple(null, this, false)
+                val (L, LR, Dup) = left.split(onKey)
+                return Triple(L, this.copy(left = LR), Dup)
+            }
         }
     }
 
@@ -294,29 +297,29 @@ data class TreapIterator<E, P>(var data: Treap.Node<E, P>?, val nav: Stack<Treap
     }
 }
 
-fun <E : Comparable<E>, P> treapOf(): Treap<E, P> = Treap(cmp = Comparator.naturalOrder() )
-fun <E : Comparable<E>> treapOf(e: E): Treap<E, Unit> = Treap(e, Unit, cmp = Comparator.naturalOrder())
-fun <E : Comparable<E>> treapOf(vararg e: E): Treap<E, Unit>
-        = e.fold(treapOf()) { t, e -> t.add(e) }
-fun <E : Comparable<E>, P> treapOf(e: Pair<E, P>): Treap<E, P> = Treap(e.first, e.second, cmp = Comparator.naturalOrder())
-fun <E : Comparable<E>, P> treapOf(vararg e: Pair<E, P>): Treap<E, P>
-        = e.fold(treapOf()) { t, e -> t.add(e.first, e.second) }
+fun <E : Comparable<E>, P> treapOf(): Treap<E, P> = Treap(cmp = naturalOrder() )
+fun <E : Comparable<E>> treapOf(e: E): Treap<E, Unit> = Treap(e, Unit, cmp = naturalOrder())
+fun <E : Comparable<E>> treapOf(vararg es: E): Treap<E, Unit>
+        = es.fold(treapOf()) { t, e -> t.add(e) }
+fun <E : Comparable<E>, P> treapOf(e: Pair<E, P>): Treap<E, P> = Treap(e.first, e.second, cmp = naturalOrder())
+fun <E : Comparable<E>, P> treapOf(vararg es: Pair<E, P>): Treap<E, P>
+        = es.fold(treapOf()) { t, e -> t.add(e.first, e.second) }
 
 fun <E, P> treapOf(cmp: Comparator<E>): Treap<E, P> = Treap(cmp = cmp)
 fun <E> treapOf(e: E, cmp: Comparator<E>): Treap<E, Unit> = Treap(e, Unit, cmp = cmp)
-fun <E> treapOf(vararg e: E, cmp: Comparator<E>): Treap<E, Unit> =
-        e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e) }
+fun <E> treapOf(vararg es: E, cmp: Comparator<E>): Treap<E, Unit> =
+        es.fold(treapOf(cmp = cmp)) { t, e -> t.add(e) }
 fun <E, P> treapOf(e: Pair<E, P>, cmp: Comparator<E>): Treap<E, P> = Treap(e.first, e.second, cmp = cmp)
-fun <E, P> treapOf(vararg e: Pair<E, P>, cmp: Comparator<E>): Treap<E, P>
-        = e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e.first, e.second) }
+fun <E, P> treapOf(vararg es: Pair<E, P>, cmp: Comparator<E>): Treap<E, P>
+        = es.fold(treapOf(cmp = cmp)) { t, e -> t.add(e.first, e.second) }
 
 fun <E, P> treapOf(cmp: (E, E) -> Int): Treap<E, P> = treapOf(Comparator(cmp))
 fun <E> treapOf(e: E, cmp: (E, E) -> Int): Treap<E, Unit> = treapOf(e, Comparator(cmp))
-fun <E> treapOf(vararg e: E, cmp: (E, E) -> Int): Treap<E, Unit> =
-        e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e) }
+fun <E> treapOf(vararg es: E, cmp: (E, E) -> Int): Treap<E, Unit> =
+        es.fold(treapOf(cmp = cmp)) { t, e -> t.add(e) }
 fun <E, P> treapOf(e: Pair<E, P>, cmp: (E, E) -> Int): Treap<E, P> = treapOf(e, Comparator(cmp))
-fun <E, P> treapOf(vararg e: Pair<E, P>, cmp: (E, E) -> Int): Treap<E, P>
-        = e.fold(treapOf(cmp = cmp)) { t, e -> t.add(e.first, e.second) }
+fun <E, P> treapOf(vararg es: Pair<E, P>, cmp: (E, E) -> Int): Treap<E, P>
+        = es.fold(treapOf(cmp = cmp)) { t, e -> t.add(e.first, e.second) }
 
 class TreapSet<E>(override val inner: Treap<E, Unit>) :
         ru.spbstu.collections.persistent.impl.AbstractSet<E>(),

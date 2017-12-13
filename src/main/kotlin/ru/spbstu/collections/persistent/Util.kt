@@ -1,6 +1,5 @@
 package ru.spbstu.collections.persistent
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import kotlinx.Warnings
 import java.util.*
 import java.util.stream.BaseStream
@@ -15,21 +14,6 @@ fun <T> Int.times(initial: T, app: (T) -> T): T {
     var imm: T = initial
     for (i in 0..this) imm = app(imm)
     return imm
-}
-
-fun <A, B> iteratorEquals(l: Iterator<A>, r: Iterator<B>): Boolean {
-    while (l.hasNext() && r.hasNext()) {
-        if (l.next() != r.next()) return false
-        if (l.hasNext() != r.hasNext()) return false
-    }
-    return true
-}
-
-fun <E> iteratorHash(i: Iterator<E>): Int {
-    var hashCode = 1
-    for (e in i.asSequence())
-        hashCode = 31 * hashCode + Objects.hashCode(e)
-    return hashCode
 }
 
 fun <A, R> fix(f: ((A) -> R, A) -> R): (A) -> R = { x -> f(fix(f), x) }
@@ -108,8 +92,8 @@ internal fun LongStream.asSequence() = iterator().asSequence()
 
 fun <E> Comparator<E>.max(le: E, re: E) = if (compare(le, re) > 0) le else re
 fun <E> Comparator<E>.max(vararg e: E) = e.maxWith(this)
-fun <E, R> Comparator<R>.maxBy(vararg e: E, selector: (E) -> R): E? =
-        with(nullsFirst()) {
+fun <E, R: Any> Comparator<R>.maxBy(vararg e: E, selector: (E) -> R): E? =
+        with(this.nullsFirst()) {
             var max: E? = null
             var maxValue: R? = null
             for (p in e) {
@@ -122,11 +106,11 @@ fun <E, R> Comparator<R>.maxBy(vararg e: E, selector: (E) -> R): E? =
             return max
         }
 
-@Suppress(Warnings.USELESS_CAST) // without this "useless cast" it does not compile
-fun <E> Comparator<E>.nullsFirst(): Comparator<E?> = Comparator.nullsFirst(this) as Comparator<E?>
+@Suppress(Warnings.UNCHECKED_CAST) // without this "useless cast" it does not compile
+fun <E> Comparator<E>.nullsFirst(): Comparator<E?> = nullsFirst(this as Comparator<Any>) as Comparator<E?>
 
-@Suppress(Warnings.USELESS_CAST) // ditto
-fun <E> Comparator<E>.nullsLast(): Comparator<E?> = Comparator.nullsLast(this) as Comparator<E?>
+@Suppress(Warnings.UNCHECKED_CAST) // ditto
+fun <E> Comparator<E>.nullsLast(): Comparator<E?> = nullsFirst(this as Comparator<Any>) as Comparator<E?>
 
 fun <E> Iterator<E>.nextOrNull(): E? = if (hasNext()) next() else null
 

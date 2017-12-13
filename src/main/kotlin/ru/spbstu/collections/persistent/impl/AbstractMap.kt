@@ -4,11 +4,8 @@ abstract class AbstractMap<K, V> : Map<K, V> {
     class DefaultKeySet<K, V>(val parent: Map<K, V>): AbstractSet<K>() {
         override val size: Int get() = parent.size
         override fun contains(element: K) = parent.contains(element)
-        override fun iterator(): Iterator<K> = object : Iterator<K> {
-            val inner = parent.iterator()
-            override fun hasNext(): Boolean = inner.hasNext()
-            override fun next(): K = inner.next().key
-        }
+        override fun iterator(): Iterator<K> =
+                mapIterator(parent.iterator()) { it.key }
     }
 
     override val keys: Set<K>
@@ -16,11 +13,8 @@ abstract class AbstractMap<K, V> : Map<K, V> {
 
     class DefaultValueSet<K, V>(val parent: Map<K, V>): AbstractCollection<V>() {
         override val size: Int get() = parent.size
-        override fun iterator(): Iterator<V> = object : Iterator<V> {
-            val inner = parent.iterator()
-            override fun hasNext(): Boolean = inner.hasNext()
-            override fun next(): V = inner.next().value
-        }
+        override fun iterator(): Iterator<V> =
+                mapIterator(parent.iterator()) { it.value }
     }
 
     override val values: Collection<V>
@@ -33,11 +27,8 @@ abstract class AbstractMap<K, V> : Map<K, V> {
         override val size: Int get() = parent.size
         override fun contains(element: Map.Entry<K, V>) =
                 parent.getOrElse(element.key){ null } == element.value
-        override fun iterator(): Iterator<Map.Entry<K, V>> = object : Iterator<Map.Entry<K, V>> {
-            val inner = parent.iterator()
-            override fun hasNext(): Boolean = inner.hasNext()
-            override fun next(): Map.Entry<K, V> = inner.next().let { DefaultEntry(it.key, it.value) }
-        }
+        override fun iterator(): Iterator<Map.Entry<K, V>> =
+                mapIterator(parent.iterator()) { DefaultEntry(it.key, it.value) }
     }
 
     override val entries: Set<Map.Entry<K, V>>

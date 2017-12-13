@@ -2,8 +2,6 @@ package ru.spbstu.collections.persistent.impl
 
 import ru.spbstu.collections.persistent.andReturn
 import ru.spbstu.collections.persistent.butAlso
-import ru.spbstu.collections.persistent.iteratorEquals
-import java.util.*
 
 abstract class AbstractList<E> : List<E>, AbstractCollection<E>() {
     override fun iterator(): Iterator<E> = listIterator()

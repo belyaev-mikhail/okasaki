@@ -1,8 +1,5 @@
 package ru.spbstu.collections.persistent.impl
 
-import ru.spbstu.collections.persistent.iteratorEquals
-import ru.spbstu.collections.persistent.iteratorHash
-
 interface IterableWithDefaults<out E> : Iterable<E> {
     fun defaultEquals(other: Any?): Boolean =
             when {

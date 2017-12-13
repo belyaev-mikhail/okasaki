@@ -4,13 +4,16 @@ package ru.spbstu.collections.persistent
 
 import kotlinx.Warnings
 import ru.spbstu.collections.persistent.HamtScope.BINARY_DIGITS
-import java.util.*
 
 import ru.spbstu.collections.persistent.HamtScope.DIGITS_MASK
 import ru.spbstu.collections.persistent.HamtScope.popcount
 import ru.spbstu.collections.persistent.HamtScope.immInsert
 import ru.spbstu.collections.persistent.HamtScope.immSet
 import ru.spbstu.collections.persistent.HamtScope.immSetOrRemove
+import ru.spbstu.collections.persistent.slist.SList
+import ru.spbstu.collections.persistent.slist.contains
+import ru.spbstu.collections.persistent.slist.removeAt
+import ru.spbstu.collections.persistent.slist.sListOf
 
 object HamtScope {
     // clojure-style persistent vector is just an implicit segment tree with branching factor of 32
@@ -61,7 +64,7 @@ internal data class HamtNode<E>(
         val storage: Array<Any?> = Array(0){ null }
 ) {
     inline fun safeCopy(bitMask: Int = this.bitMask, storage: Array<Any?> = this.storage) =
-        if(bitMask === this.bitMask && storage === this.storage) this
+        if(bitMask == this.bitMask && storage === this.storage) this
         else copy(bitMask = bitMask, storage = storage)
 
     inline fun squashCopy(bitMask: Int? = this.bitMask, storage: Array<Any?>? = this.storage) =

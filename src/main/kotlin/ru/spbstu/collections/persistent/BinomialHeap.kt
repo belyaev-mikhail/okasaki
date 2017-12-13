@@ -1,5 +1,6 @@
 package ru.spbstu.collections.persistent
 
+import ru.spbstu.collections.persistent.slist.*
 import java.util.*
 
 data class BinomialHeapNode<E>(val max: E, val subNodes: SList<BinomialHeapNode<E>>? = null) {
@@ -77,9 +78,9 @@ fun <E> binomialHeapOf(element: E, cmp: (E, E) -> Int) =
 fun <E> binomialHeapOf(vararg element: E, cmp: Comparator<E>) =
         element.map { binomialHeapOf(it, cmp) }.reduce { lh, rh -> lh merge rh }
 
-fun <E : Comparable<E>> binomialHeapOf(element: E) = binomialHeapOf(element, cmp = Comparator.naturalOrder())
-fun <E : Comparable<E>> binomialHeapOf() = binomialHeapOf(cmp = Comparator.naturalOrder<E>())
-fun <E : Comparable<E>> binomialHeapOf(vararg element: E) = binomialHeapOf(*element, cmp = Comparator.naturalOrder<E>())
+fun <E : Comparable<E>> binomialHeapOf(element: E) = binomialHeapOf(element, cmp = naturalOrder())
+fun <E : Comparable<E>> binomialHeapOf() = binomialHeapOf(cmp = naturalOrder<E>())
+fun <E : Comparable<E>> binomialHeapOf(vararg element: E) = binomialHeapOf(*element, cmp = naturalOrder<E>())
 
 fun <E : Comparable<E>> BinomialHeap(elements: Collection<E>) =
         elements.fold(binomialHeapOf<E>()) { col, e -> col.add(e) }

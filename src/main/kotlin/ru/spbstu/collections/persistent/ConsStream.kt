@@ -1,8 +1,6 @@
 package ru.spbstu.collections.persistent
 
 import java.util.*
-import kotlin.reflect.jvm.extensionProperties
-import kotlin.reflect.memberExtensionProperties
 
 data class ConsStream<E>(val head: E, val lazyTail: Lazy<ConsStream<E>?>) {
     constructor(head: E, tail: ConsStream<E>?): this(head, lazyOf(tail))
@@ -32,7 +30,7 @@ data class ConsStream<E>(val head: E, val lazyTail: Lazy<ConsStream<E>?>) {
     }
 }
 
-operator fun<E> ConsStream<E>.get(index: Int): E {
+operator fun<E> ConsStream<E>?.get(index: Int): E {
     var acc: ConsStream<E>? = this
     var ix = index
     while(acc != null) {
@@ -43,23 +41,37 @@ operator fun<E> ConsStream<E>.get(index: Int): E {
     throw IndexOutOfBoundsException()
 }
 
-infix fun<A, B> ConsStream<A>.zip(that: ConsStream<B>): ConsStream<Pair<A, B>> =
-        ConsStream(Pair(this.head, that.head)){
-            if(this.tail == null || that.tail == null) null
-            else this.tail!! zip that.tail!!
+infix fun<A, B> ConsStream<A>?.zip(that: ConsStream<B>?): ConsStream<Pair<A, B>>? =
+        when {
+            this == null || that == null -> null
+            else -> ConsStream(Pair(this.head, that.head)){
+                val thisTail = this.tail
+                val thatTail = that.tail
+                when {
+                    thisTail == null || thatTail == null -> null
+                    else -> thisTail zip thatTail
+                }
+            }
         }
 
-fun<A, B> ConsStream.Companion.zip(lhv: ConsStream<A>, rhv: ConsStream<B>) = lhv zip rhv
-fun<A, B, R> ConsStream.Companion.zip(lhv: ConsStream<A>, rhv: ConsStream<B>, z: (A, B) -> R):  ConsStream<R> =
-        ConsStream(z(lhv.head, rhv.head)) {
-            if(lhv.tail == null || rhv.tail == null) null
-            else zip(lhv.tail!!, rhv.tail!!, z)
+fun<A, B> ConsStream.Companion.zip(lhv: ConsStream<A>?, rhv: ConsStream<B>?) = lhv zip rhv
+fun<A, B, R> ConsStream.Companion.zip(lhv: ConsStream<A>?, rhv: ConsStream<B>?, z: (A, B) -> R): ConsStream<R>? =
+        when {
+            lhv == null || rhv == null -> null
+            else -> ConsStream(z(lhv.head, rhv.head)) {
+                val lhvTail = lhv.tail
+                val rhvTail = rhv.tail
+                when {
+                    lhvTail == null || rhvTail == null -> null
+                    else -> zip(lhvTail, rhvTail, z)
+                }
+            }
         }
 
-fun<E> ConsStream<E>.add(index: Int, e: E): ConsStream<E> =
+fun<E> ConsStream<E>?.add(index: Int, e: E): ConsStream<E>? =
         when(index) {
             0 -> ConsStream(e, this)
-            else -> copy(lazyTail = lazy { tail.add(index - 1, e) })
+            else -> this?.copy(lazyTail = lazy { tail.add(index - 1, e) })
         }
 fun<E> ConsStream<E>.addAll(index: Int, elements: ConsStream<E>): ConsStream<E> =
         when(index) {
@@ -67,9 +79,9 @@ fun<E> ConsStream<E>.addAll(index: Int, elements: ConsStream<E>): ConsStream<E> 
             else -> copy(lazyTail = lazy { tail.addAll(index - 1, elements) })
         }
 
-fun<E> ConsStream<E>.add(e: E): ConsStream<E> =
-        when(tail) {
-            null -> ConsStream(e){ null }
+fun<E> ConsStream<E>?.add(e: E): ConsStream<E>? =
+        when {
+            this == null -> ConsStream(e){ null }
             else -> copy(lazyTail = lazy { tail.add(e) })
         }
 
@@ -80,7 +92,7 @@ fun<E> ConsStream<E>.addAll(e: ConsStream<E>): ConsStream<E> =
         }
 
 operator fun<E> ConsStream<E>.plus(e: ConsStream<E>) = addAll(e)
-operator fun<E> E.plus(cs: ConsStream<E>) = cs.add(0, this)
+operator fun<E> E.plus(cs: ConsStream<E>?) = cs.add(0, this)
 operator fun<E> ConsStream<E>.plus(e: E) = add(e)
 
 fun<E> ConsStream<E>.asSequence() = ConsStreamSeq<E>(this)
@@ -89,8 +101,10 @@ operator fun<E> ConsStream<E>.iterator() = asSequence().iterator()
 data class ConsStreamSeq<E>(var stream: ConsStream<E>?): Sequence<E>, Iterator<E> {
     override fun hasNext() = stream != null
     override fun next() =
-            if(stream == null) throw NoSuchElementException()
-            else stream!!.head.apply { stream = stream?.tail }
+            stream.let { stream ->
+                if(stream == null) throw NoSuchElementException()
+                else stream.head butAlso { this.stream = stream.tail }
+            }
 
     override fun iterator() = this
 }
