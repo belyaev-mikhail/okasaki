@@ -1,7 +1,7 @@
 package ru.spbstu.collections.persistent
 
 import org.junit.Test
-import ru.spbstu.collections.persistent.slist.*
+import ru.spbstu.collections.persistent.*
 import java.util.*
 import kotlin.test.assertEquals
 

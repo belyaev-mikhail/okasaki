@@ -1,7 +1,6 @@
 package ru.spbstu.collections.persistent.impl
 
 import ru.spbstu.collections.persistent.andReturn
-import ru.spbstu.collections.persistent.butAlso
 
 abstract class AbstractList<E> : List<E>, AbstractCollection<E>() {
     override fun iterator(): Iterator<E> = listIterator()
@@ -32,7 +31,7 @@ abstract class AbstractList<E> : List<E>, AbstractCollection<E>() {
     data class DefaultListIterator<E>(val data: List<E>, var index: Int = 0) : ListIterator<E> {
         override fun hasNext() = index < data.size
         override fun hasPrevious() = index > 0
-        override fun next() = data[index] butAlso { ++index }
+        override fun next() = data[index].also { ++index }
         override fun nextIndex() = index
         override fun previous() = { --index } andReturn data[index]
         override fun previousIndex() = index - 1

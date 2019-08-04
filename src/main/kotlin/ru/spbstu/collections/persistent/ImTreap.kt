@@ -2,13 +2,16 @@ package ru.spbstu.collections.persistent
 
 import ru.spbstu.collections.persistent.impl.iteratorEquals
 import ru.spbstu.collections.persistent.impl.iteratorHash
-import java.util.*
+import ru.spbstu.wheels.Stack
+import ru.spbstu.wheels.isNotEmpty
+import ru.spbstu.wheels.stack
+import kotlin.random.Random
 
 data class ImTreap<out E>(
         val payload: E,
         val left: ImTreap<E>? = null,
         val right: ImTreap<E>? = null,
-        val random: Random = Random(),
+        val random: Random = Random.Default,
         val priority: Int = random.nextInt()
 ) {
     companion object{}
@@ -93,13 +96,15 @@ fun<E> ImTreap<E>?.drop(ix: Int) = this?.split(ix - 1)?.second
 fun<E> ImTreap<E>?.take(ix: Int) = this?.split(ix)?.first
 fun<E> ImTreap<E>?.subList(from: Int, to: Int) = drop(from).take(to - from)
 
-data class ImTreapIterator<E>(var data: ImTreap<E>?, val nav: Stack<ImTreap<E>> = Stack()): Iterator<E> {
+data class ImTreapIterator<E>(var data: ImTreap<E>?, val nav: Stack<ImTreap<E>> = stack()): Iterator<E> {
     override fun hasNext() = nav.isNotEmpty() || data != null
 
     override fun next(): E {
         while(data != null) {
-            nav.push(data)
-            data = data?.left
+            data?.let {
+                nav.push(it)
+                data = it.left
+            }
         }
         data = nav.pop()
         val ret = data!!.payload

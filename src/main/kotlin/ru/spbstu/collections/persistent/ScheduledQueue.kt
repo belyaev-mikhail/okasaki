@@ -1,8 +1,8 @@
 package ru.spbstu.collections.persistent
 
 import ru.spbstu.collections.persistent.impl.ImmutableQueue
-import ru.spbstu.collections.persistent.slist.SList
-import ru.spbstu.collections.persistent.slist.sListOf
+import ru.spbstu.collections.persistent.SList
+import ru.spbstu.collections.persistent.sListOf
 
 // rotate is essentially a scheduled reverse() of `inputs`
 // precondition: outputs.size == (inputs.size - 1)

@@ -2,7 +2,7 @@
 
 package ru.spbstu.collections.persistent
 
-import kotlinx.Warnings
+import kotlinx.warnings.Warnings
 import ru.spbstu.collections.persistent.HamtScope.BINARY_DIGITS
 
 import ru.spbstu.collections.persistent.HamtScope.DIGITS_MASK
@@ -10,10 +10,10 @@ import ru.spbstu.collections.persistent.HamtScope.popcount
 import ru.spbstu.collections.persistent.HamtScope.immInsert
 import ru.spbstu.collections.persistent.HamtScope.immSet
 import ru.spbstu.collections.persistent.HamtScope.immSetOrRemove
-import ru.spbstu.collections.persistent.slist.SList
-import ru.spbstu.collections.persistent.slist.contains
-import ru.spbstu.collections.persistent.slist.removeAt
-import ru.spbstu.collections.persistent.slist.sListOf
+import ru.spbstu.collections.persistent.SList
+import ru.spbstu.collections.persistent.contains
+import ru.spbstu.collections.persistent.removeAt
+import ru.spbstu.collections.persistent.sListOf
 
 object HamtScope {
     // clojure-style persistent vector is just an implicit segment tree with branching factor of 32

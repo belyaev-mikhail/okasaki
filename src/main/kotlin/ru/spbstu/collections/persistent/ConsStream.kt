@@ -1,6 +1,5 @@
 package ru.spbstu.collections.persistent
 
-import java.util.*
 
 data class ConsStream<E>(val head: E, val lazyTail: Lazy<ConsStream<E>?>) {
     constructor(head: E, tail: ConsStream<E>?): this(head, lazyOf(tail))
@@ -76,7 +75,7 @@ fun<E> ConsStream<E>?.add(index: Int, e: E): ConsStream<E>? =
 fun<E> ConsStream<E>.addAll(index: Int, elements: ConsStream<E>): ConsStream<E> =
         when(index) {
             0 -> elements.addAll(this)
-            else -> copy(lazyTail = lazy { tail.addAll(index - 1, elements) })
+            else -> copy(lazyTail = lazy { tail!!.addAll(index - 1, elements) })
         }
 
 fun<E> ConsStream<E>?.add(e: E): ConsStream<E>? =
@@ -86,7 +85,7 @@ fun<E> ConsStream<E>?.add(e: E): ConsStream<E>? =
         }
 
 fun<E> ConsStream<E>.addAll(e: ConsStream<E>): ConsStream<E> =
-        when(tail) {
+        when(val tail = tail) {
             null -> e
             else -> copy(lazyTail = lazy { tail.addAll(e) })
         }
@@ -103,7 +102,7 @@ data class ConsStreamSeq<E>(var stream: ConsStream<E>?): Sequence<E>, Iterator<E
     override fun next() =
             stream.let { stream ->
                 if(stream == null) throw NoSuchElementException()
-                else stream.head butAlso { this.stream = stream.tail }
+                else stream.head.also { this.stream = stream.tail }
             }
 
     override fun iterator() = this

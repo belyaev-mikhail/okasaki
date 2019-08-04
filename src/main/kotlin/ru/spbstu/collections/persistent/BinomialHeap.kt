@@ -1,7 +1,6 @@
 package ru.spbstu.collections.persistent
 
-import ru.spbstu.collections.persistent.slist.*
-import java.util.*
+import ru.spbstu.collections.persistent.*
 
 data class BinomialHeapNode<E>(val max: E, val subNodes: SList<BinomialHeapNode<E>>? = null) {
     override fun toString() = "(" + debugString() + ")"
@@ -17,7 +16,7 @@ data class BinomialHeap<E> internal constructor(
     fun debugString() = nodes?.joinToString{ "(" + (it?.debugString() ?: "") + ")"} ?: ""
 
     internal operator fun E.compareTo(that: E) = cmpOpt.compare(this, that)
-    internal fun BinomialHeapNode<E>.asHeap() =
+    internal fun BinomialHeapNode<E>.asHeap(): BinomialHeap<E> =
             if (subNodes == null) BinomialHeap(cmpOpt = cmpOpt)
             else BinomialHeap(subNodes.reverse(), cmpOpt)
 
@@ -69,7 +68,7 @@ infix fun <E> BinomialHeap<E>.merge(that: BinomialHeap<E>): BinomialHeap<E> {
 fun <E> binomialHeapOf(element: E, cmp: Comparator<E>) =
         BinomialHeap(SList(BinomialHeapNode(element)), cmp.nullsFirst())
 
-fun <E> binomialHeapOf(cmp: Comparator<E>) =
+fun <E> binomialHeapOf(cmp: Comparator<E>): BinomialHeap<E> =
         BinomialHeap(sListOf(), cmp.nullsFirst())
 
 fun <E> binomialHeapOf(element: E, cmp: (E, E) -> Int) =
@@ -79,19 +78,20 @@ fun <E> binomialHeapOf(vararg element: E, cmp: Comparator<E>) =
         element.map { binomialHeapOf(it, cmp) }.reduce { lh, rh -> lh merge rh }
 
 fun <E : Comparable<E>> binomialHeapOf(element: E) = binomialHeapOf(element, cmp = naturalOrder())
-fun <E : Comparable<E>> binomialHeapOf() = binomialHeapOf(cmp = naturalOrder<E>())
+fun <E : Comparable<E>> binomialHeapOf(): BinomialHeap<E> = binomialHeapOf(cmp = naturalOrder<E>())
 fun <E : Comparable<E>> binomialHeapOf(vararg element: E) = binomialHeapOf(*element, cmp = naturalOrder<E>())
 
-fun <E : Comparable<E>> BinomialHeap(elements: Collection<E>) =
-        elements.fold(binomialHeapOf<E>()) { col, e -> col.add(e) }
+fun <E : Comparable<E>> BinomialHeap(elements: Collection<E>): BinomialHeap<E> =
+        elements.fold(binomialHeapOf()) { col, e -> col.add(e) }
 
 fun <E> BinomialHeap(elements: Collection<E>, cmp: Comparator<E>) =
-        elements.fold(binomialHeapOf<E>(cmp)) { col, e -> col.add(e) }
+        elements.fold(binomialHeapOf(cmp)) { col, e -> col.add(e) }
 
 fun <E> BinomialHeap(elements: Collection<E>, cmp: (E, E) -> Int) =
         elements.fold(binomialHeapOf<E>(Comparator(cmp))) { col, e -> col.add(e) }
 
-fun <E> BinomialHeap<E>.add(element: E) = this merge BinomialHeap(sListOf(BinomialHeapNode(element)), cmpOpt, element)
+fun <E> BinomialHeap<E>.add(element: E): BinomialHeap<E> =
+        this merge BinomialHeap(sListOf(BinomialHeapNode(element)), cmpOpt, element)
 
 fun <E> BinomialHeap<E>.addAll(that: BinomialHeap<E>) = this merge that
 

@@ -1,7 +1,5 @@
 package ru.spbstu.collections.persistent.impl
 
-import java.util.Objects.*
-
 abstract class AbstractSet<E>: Set<E>, AbstractCollection<E>() {
     override fun equals(other: Any?) =
         when {
@@ -10,5 +8,5 @@ abstract class AbstractSet<E>: Set<E>, AbstractCollection<E>() {
             else -> (size == other.size) && containsAll(other)
         }
 
-    override fun hashCode() = sumBy { hashCode(it) } // set hashcode
+    override fun hashCode() = sumBy { it.hashCode() } // set hashcode
 }

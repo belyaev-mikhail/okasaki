@@ -1,9 +1,9 @@
 package ru.spbstu.collections.persistent
 
 import ru.spbstu.collections.persistent.impl.ImmutableQueue
-import ru.spbstu.collections.persistent.slist.SList
-import ru.spbstu.collections.persistent.slist.plus
-import ru.spbstu.collections.persistent.slist.reverse
+import ru.spbstu.collections.persistent.SList
+import ru.spbstu.collections.persistent.plus
+import ru.spbstu.collections.persistent.reverse
 
 class AmortizedQueue<E> private constructor(val inputs: SList<E>?, val outputs: SList<E>?): ImmutableQueue<E> {
 

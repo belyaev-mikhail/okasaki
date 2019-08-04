@@ -3,7 +3,7 @@ package ru.spbstu.collections.persistent
 import ru.spbstu.collections.persistent.impl.IterableWithDefaults
 import ru.spbstu.collections.persistent.impl.iteratorEquals
 import ru.spbstu.collections.persistent.impl.iteratorHash
-import ru.spbstu.collections.persistent.slist.*
+import ru.spbstu.collections.persistent.*
 
 data class SZipper<E>
 private constructor(
@@ -135,7 +135,7 @@ fun <E> sZipperOf(vararg e: E) = SZipper(sListOf(*e))
 data class SZipperIterator<E>(var data: SZipper<E>) : ListIterator<E> {
     override fun hasPrevious() = data.left != null
     override fun previousIndex() = nextIndex() - 1
-    override fun next() = data.current butAlso { data = data.goRight() }
+    override fun next() = data.current.also { data = data.goRight() }
     override fun previous() = { data = data.goLeft() } andReturn data.current
 
     override fun nextIndex() = data.cursor

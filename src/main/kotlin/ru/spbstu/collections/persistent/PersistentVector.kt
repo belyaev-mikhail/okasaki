@@ -1,10 +1,9 @@
 package ru.spbstu.collections.persistent
 
-import kotlinx.Warnings
+import kotlinx.warnings.Warnings
 import ru.spbstu.collections.persistent.Bits.get
 import ru.spbstu.collections.persistent.impl.Wrapper
 import ru.spbstu.collections.persistent.log2ceil
-import java.util.*
 
 import ru.spbstu.collections.persistent.PersistentVectorScope.logBFceil
 import ru.spbstu.collections.persistent.PersistentVectorScope.greaterPowerOfBF
@@ -14,6 +13,8 @@ import ru.spbstu.collections.persistent.PersistentVectorScope.BINARY_DIGITS
 import ru.spbstu.collections.persistent.PersistentVectorScope.DIGITS_MASK
 import ru.spbstu.collections.persistent.impl.iteratorEquals
 import ru.spbstu.collections.persistent.impl.iteratorHash
+import ru.spbstu.wheels.Stack
+import ru.spbstu.wheels.stack
 
 object PersistentVectorScope {
     // clojure-style persistent vector is just an implicit segment tree with branching factor of 32
@@ -155,7 +156,7 @@ data class PersistentVectorIterator<E>(var data: PersistentVector<E>) : Iterator
     }
 
     private var currentState: IterationState<E> = IterationState(data.depth - 1, 0, data.root)
-    private val backStack: Stack<IterationState<E>> = Stack()
+    private val backStack: Stack<IterationState<E>> = stack()
     private var totalIx: Int = 0
 
     private fun ensureLeaf() {

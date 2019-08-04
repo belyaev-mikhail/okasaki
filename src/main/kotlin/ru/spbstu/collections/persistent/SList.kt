@@ -1,8 +1,7 @@
 package ru.spbstu.collections.persistent
 
-import kotlinx.Warnings
+import kotlinx.warnings.Warnings
 import ru.spbstu.collections.persistent.impl.IterableWithDefaults
-import java.util.*
 
 data class SList<out E>(val head: E, val tail: SList<E>? = null) : IterableWithDefaults<E> {
 

@@ -1,16 +1,15 @@
 package ru.spbstu.collections.persistent
 
-import kotlinx.Warnings
-import java.util.*
+import kotlinx.warnings.Warnings
 import java.util.stream.BaseStream
 import java.util.stream.IntStream
 import java.util.stream.LongStream
 
-infix fun Int.times(action: () -> Unit) {
+inline infix fun Int.times(action: () -> Unit) {
     for (i in 0..this) action()
 }
 
-fun <T> Int.times(initial: T, app: (T) -> T): T {
+inline fun <T> Int.times(initial: T, app: (T) -> T): T {
     var imm: T = initial
     for (i in 0..this) imm = app(imm)
     return imm
@@ -120,10 +119,6 @@ inline fun <R> function(body: () -> R): R = body()
 @Suppress(Warnings.NOTHING_TO_INLINE)
 internal inline infix fun <E, R> (() -> R).andReturn(v: E): E {
     this(); return v
-}
-
-internal inline infix fun <E, R> E.butAlso(body: () -> R): E {
-    body(); return this
 }
 
 interface Either<A, B>

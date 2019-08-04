@@ -1,6 +1,6 @@
 package ru.spbstu.collections.persistent
 
-import kotlinx.Warnings
+import kotlinx.warnings.Warnings
 import org.junit.Test
 import kotlin.test.assertEquals
 

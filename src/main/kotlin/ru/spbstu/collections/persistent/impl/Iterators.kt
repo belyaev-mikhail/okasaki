@@ -1,7 +1,5 @@
 package ru.spbstu.collections.persistent.impl
 
-import java.util.*
-
 fun <A, B> iteratorEquals(l: Iterator<A>, r: Iterator<B>): Boolean {
     while (l.hasNext() && r.hasNext()) {
         if (l.next() != r.next()) return false
@@ -13,7 +11,7 @@ fun <A, B> iteratorEquals(l: Iterator<A>, r: Iterator<B>): Boolean {
 fun <E> iteratorHash(i: Iterator<E>): Int {
     var hashCode = 1
     for (e in i.asSequence())
-        hashCode = 31 * hashCode + Objects.hashCode(e)
+        hashCode = 31 * hashCode + e.hashCode()
     return hashCode
 }
 
